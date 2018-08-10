@@ -4,9 +4,13 @@ const app = express()
 var quoteIndex = 0
 //{id:0, title:"", quote:"", approved:"", submitted:""}
 var quotes = []
+var selectedQuote = undefined
 
 var images = [{value: "image2", name:"background2.jpg", textColor:"black"},
-	      {value: "image3", name:"background3.jpg", textColor:"black"}]
+	      {value: "image3", name:"background3.jpg", textColor:"black"},
+	      {value: "image4", name:"background4.jpg", textColor:"black"},
+	      {value: "image5", name:"background5.jpg", textColor:"black"},
+	      {value: "image6", name:"background6.jpg", textColor:"black"}]
 
 function createhtmlForQuote(quote)
 {
@@ -36,15 +40,24 @@ html, body, {
     flex-direction: column;
     font-size: 55;
 }
+    
+#title {
+    font-size:40;
+    margin-top:80px;
+    margin-left:80px;
+}
+#quote {
+    font-style:italic;
+}
 </style>
 <script>
 setTimeout(() => location.reload(),60000)
 </script>
 <body background="${imagePath}">
-<div><h1>${title}</h1></div>
+<div id="title">${title}</div>
 <div class="container">
 <div>
-<div>${quote.quote}</div>
+<div id="quote">${quote.quote}</div>
 <div style="text-align:right">${author}</div>
 </div>
 </div>
@@ -62,14 +75,25 @@ function escapeHTML(s) {
 }
 
 setInterval(() => {
-
-    quoteIndex += 1
-    if (quoteIndex >= quotes.length)
+    for (var i = 0; i < quotes.length; ++i)
     {
-	quoteIndex = 0
+	quoteIndex += 1
+     
+	if (quoteIndex >= quotes.length)
+	{
+	    quoteIndex = 0
+	}
+
+	if (quotes[quoteIndex].approved)
+	{
+	    selectedQuote = quotes[quoteIndex]
+	    return
+	}	
     }
-    
-},6000)
+
+    selectedQuote = undefined
+
+},60000)
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
@@ -77,20 +101,17 @@ app.use(express.static("images"))
 
 app.get('/', (req, res) => {
 
-    if (quotes.length == 0)
+    if (quotes.length == 0 || selectedQuote == undefined)
     {
-	res.end("No quotes yet!")
+	res.end(`<script>
+		setTimeout(() => location.reload(),60000)
+		</script>
+		No quotes yet!`)
 	return
     }
 
-    if (quoteIndex > quotes.length)
-    {
-	res.end("An error occured, please refresh")
-	return
-    }
-    
-    var html = createhtmlForQuote(quotes[quoteIndex])
-    
+    var html = createhtmlForQuote(selectedQuote)
+   
     res.end(html)
 })
 
@@ -162,6 +183,7 @@ app.get('/add', (req, res) => {
     }
     html += "<br>"
     html += "<button type=\"submit\" value=\"Submit\">Submit</button>"
+    //html += `<a href="/quotes/${}">Preview</a>`
     html += "</form>"
     
     html += "</html>"
@@ -180,6 +202,11 @@ app.get('/quote/:id', (req, res) => {
     var html = createhtmlForQuote(quotes[req.params.id])
     res.end(html)
 })
+
+
+
+
+
 
 //add quote
 app.post('/quote', (req, res) => {
