@@ -93,7 +93,11 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
-app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
+app.use("/", express.static("index.html"))
+app.use('/addImage', express.static("newImage.html"))
+
+//app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
+
 app.get('/admin', (req, res) => {
     
     var html = `
@@ -160,17 +164,7 @@ app.get('/admin', (req, res) => {
 	})
     })
 })
-app.get('/addImage', (req, res) => {
-    var html ="<html>"
-    html += "<form action=\"/image\" enctype=\"multipart/form-data\" method=\"post\">"
-//    html += "Title: <input type=\"text\" placeholder=\"Title\" name=\"title\"></input><br>"
-    html += `Image: <input type="file" name="image" accept="image/*"><br>`
-//    html += "Subtitle: <input type=\"text\" placeholder=\"Subtitle\" name=\"subtitle\"></input><br><br>"
-    html += "<button type=\"submit\" value=\"Submit\">Submit</button>"
-    html += "</form>"
-    html += "</html>"
-    res.end(html)
-})
+
 
 app.post('/image', upload.single('image'), (req, res) => {
     console.log("got file: " + req.file.filename)
@@ -297,30 +291,18 @@ app.post('/quote', (req, res) => {
 app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection("slides", function(collection, onComplete) {
 	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
-	    if(err || item == null){
-			console.log("failed to get quote to preview with id: "+ req.params.id +" " + err)
-			res.end("invalid id")
+			if(err || item == null){
+				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
+				res.end("invalid id")
+				onComplete()
+				return
+			}
+			//TODO
+			res.sendFile("index.html", {root: __dirname}) 
 			onComplete()
-			return
-	    }
-
-	    if (item.type == "image")
-	    {
-			var html = createhtmlForImagePost(item)   
-			res.end(html)
-	    }
-	    if (item.type == "text")
-	    {
-			var html = createhtmlForTextPost(item)   
-			res.end(html)
-	    }
-
-	    onComplete()
+		})
 	})
-    })
 })
-
-
 
 //delete quote
 app.delete('/admin/quote/:id', (req, res) => {
