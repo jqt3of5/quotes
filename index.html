@@ -39,8 +39,8 @@
 	<script>
 	function getContent()
 	{
-		$.getJSON("/quote", function(data){
-			var item = JSON.parse(data)
+		$.getJSON("/quote", function(item){
+			
 			if (item.type == "image")
 			{
 				$(".image").show()
