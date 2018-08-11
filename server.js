@@ -92,7 +92,7 @@ background-size: cover
 }   
 html, body, {
     height: 100%;
-	margin: 0px;
+	margin: 0;
 }
 </style>
 <script>
