@@ -93,76 +93,50 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
-app.use("/", express.static("index.html"))
-app.use('/addImage', express.static("newImage.html"))
 
-//app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
+app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
+app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) })
+app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
 
-app.get('/admin', (req, res) => {
+app.get('/addQuote', (req, res) => {
+
+    var html ="<html>"
+    html += "<form action=\"/quote\" method=\"post\">"
+    html += "Title: <input type=\"text\" placeholder=\"Title\" name=\"title\"></input><br>"
+    html += "Quote: <textarea placeholder=\"Quote\" name=\"quote\"></textarea><br>"
+    html += "Author: <input type=\"text\" placeholder=\"Author\" name=\"author\"></input><br><br>"
+    html+= "Background Image: <br>"
+
+    html += `<input type="radio" name="image" value="-1" checked>None<br>`
     
-    var html = `
-<html>
-<head>
-<script>
-    function approve(id){
-	var xhttp = new XMLHttpRequest()
-	xhttp.open('GET', "/admin/quote/"+id+"/approve")
-	xhttp.send()
+    for (var i = 0; i < images.length; ++i)
+    {
+		html += `<input type="radio" name="image" value="${images[i].name}"><img height=100 width=100 src="${images[i].name}" /><br>`
     }
-    function del(id){
-	var xhttp = new XMLHttpRequest()
-	xhttp.open('DELETE', "/admin/quote/"+ id)
-	xhttp.send()
-    }
-    function unapprove(id) {
-	var xhttp = new XMLHttpRequest()
-	xhttp.open('GET', "/admin/quote/"+id+"/unapprove")
-	xhttp.send()
-    }
-</script>
-</head>`	
+    html += "<br>"
+    html += "<button type=\"submit\" value=\"Submit\">Submit</button>"
+    html += "</form>"
+    
+    html += "</html>"
 
+    res.end(html)
+})
+
+//Preview
+app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection("slides", function(collection, onComplete) {
-	collection.find({}).toArray(function(err, quotes) {
-            if (err) {
-		console.log("Error fetching items from slides collection")
-		onComplete()
-		return
-            }
-	    
-	    for (var i = 0; i < quotes.length; ++i)
-	    {
-		var item = quotes[i]
-
-		if (item.type == "text")
-		{
-		    html += escapeHTML(item.title) + "<br>"
-		    html += escapeHTML(item.quote) + "<br>"
-		}
-		if (item.type == "image")
-		{
-		    html += `<img width=100 height=100 src="uploads/${item.filename}"></img><br>`
-		}
-		
-		if (item.approved)
-		{
-    		    html += `<button onclick="unapprove(${item.id})">Unapprove</button>`
-		}
-		else
-		{
-		    html += `<button onclick="approve(${item.id})">Approve</button>`
-		}
-		
-		html += `<button onclick="del(${item.id})">Delete</button>`
-		html += `<a href="/quote/${item.id}">Preview</a>`
-		html += "<br><br>"
-	    }
-    
-	    html += "</html>"
-	    res.end(html)
-	    onComplete()
+	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
+			if(err || item == null){
+				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
+				res.end("invalid id")
+				onComplete()
+				return
+			}
+			//TODO
+			res.sendFile("index.html", {root: __dirname}) 
+			onComplete()
+		})
 	})
-    })
 })
 
 
@@ -197,31 +171,6 @@ app.post('/image', upload.single('image'), (req, res) => {
 	})
     })
     
-})
-
-app.get('/addQuote', (req, res) => {
-
-    var html ="<html>"
-    html += "<form action=\"/quote\" method=\"post\">"
-    html += "Title: <input type=\"text\" placeholder=\"Title\" name=\"title\"></input><br>"
-    html += "Quote: <textarea placeholder=\"Quote\" name=\"quote\"></textarea><br>"
-    html += "Author: <input type=\"text\" placeholder=\"Author\" name=\"author\"></input><br><br>"
-    html+= "Background Image: <br>"
-
-    html += `<input type="radio" name="image" value="-1" checked>None<br>`
-    
-    for (var i = 0; i < images.length; ++i)
-    {
-		html += `<input type="radio" name="image" value="${images[i].name}"><img height=100 width=100 src="${images[i].name}" /><br>`
-    }
-    html += "<br>"
-    html += "<button type=\"submit\" value=\"Submit\">Submit</button>"
-    //html += `<a href="/quotes/${}">Preview</a>`
-    html += "</form>"
-    
-    html += "</html>"
-
-    res.end(html)
 })
 
 app.get('/quote', (req, res) => {
@@ -286,24 +235,20 @@ app.post('/quote', (req, res) => {
     })
 })
 
-
-//Preview
-app.get('/quote/:id', (req, res) => {
-    performDbActionOnCollection("slides", function(collection, onComplete) {
-	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
-			if(err || item == null){
-				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
-				res.end("invalid id")
+app.get('/quotes', (req, res) => {
+	performDbActionOnCollection("slides", function(collection, onComplete) {
+		collection.find({}).toArray(function(err, items) {
+			if (err)
+			{
+				res.end({success:false, error:err})
 				onComplete()
 				return
 			}
-			//TODO
-			res.sendFile("index.html", {root: __dirname}) 
+			res.end(JSON.stringify(items))
 			onComplete()
 		})
 	})
 })
-
 //delete quote
 app.delete('/admin/quote/:id', (req, res) => {
 
