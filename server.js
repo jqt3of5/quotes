@@ -92,13 +92,14 @@ background-size: cover
 }   
 html, body, {
     height: 100%;
+	margin: 0px;
 }
 </style>
 <script>
 setTimeout(() => location.reload(),60000)
 </script>
 <body>
-<img src="/uploads/${file}" style="margin-left:auto; margin-right:auto; display:block" height="90%" width="auto"></img>
+<img src="/uploads/${file}" style="margin-left:auto; margin-right:auto; display:block" height="100%" width="auto"></img>
 </body>
 </html>`
     
