@@ -98,7 +98,7 @@ html, body, {
 setTimeout(() => location.reload(),60000)
 </script>
 <body>
-<img src="/uploads/${file}" height="100%" width="auto"></img>
+<img src="/uploads/${file}" style="margin-left:auto; margin-right:auto; display:block" height="90%" width="auto"></img>
 </body>
 </html>`
     
