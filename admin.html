@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    function approve(id){
+		var xhttp = new XMLHttpRequest()
+		xhttp.open('GET', "/admin/quote/"+id+"/approve")
+		xhttp.send()
+    }
+    function del(id){
+		var xhttp = new XMLHttpRequest()
+		xhttp.open('DELETE', "/admin/quote/"+ id)
+		xhttp.send()
+    }
+    function unapprove(id) {
+		var xhttp = new XMLHttpRequest()
+		xhttp.open('GET', "/admin/quote/"+id+"/unapprove")
+		xhttp.send()
+    }
+	
+	$.getJSON('/quotes', function(items) {
+		var html = ""
+		for (var i = 0; i < items.length; ++i)
+		{
+			var item = items[i]
+
+			if (item.type == "text")
+			{
+				html += item.title + "<br>"
+				html += item.quote + "<br>"
+			}
+			
+			if (item.approved)
+			{
+				html += `<button onclick="unapprove(${item.id})">Unapprove</button>`
+			}
+			else
+			{
+				html += `<button onclick="approve(${item.id})">Approve</button>`
+			}
+			html += `<button onclick="del(${item.id})">Delete</button>`
+			html += `<a href="/quote/${item.id}">Preview</a>`
+		}
+		$('submissions').html(html)
+	})
+	
+</script>
+</head>	
+<body>
+      <div id="submissions">  
+	  </div>
+	</body>
+</html>
