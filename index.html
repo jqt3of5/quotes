@@ -61,9 +61,9 @@
 				$("#text").show()
 				
 				$("#text").css('background', 'url(images/' + item.image + ') no-repeat')
-				$("#title").innerHTML = item.title
-				$("#quote").innerHTML = item.quote
-				$("#author").innerHTML = item.author
+				$("#title").text(item.title)
+				$("#quote").text(item.quote)
+				$("#author").text(item.author)
 			}
 		})
 	}
