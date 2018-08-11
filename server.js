@@ -91,7 +91,7 @@ function escapeHTML(s) {
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
-app.use(express.static("images"))
+app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
 app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
 app.get('/admin', (req, res) => {
