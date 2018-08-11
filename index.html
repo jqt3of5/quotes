@@ -9,7 +9,7 @@
 		margin:0;
 	}
 	#container {
-		height:90%;
+		margin:10;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -60,10 +60,10 @@
 				$("#image").hide()
 				$("#text").show()
 				
-				$("#text").css('background', 'url(images/' + item.image + ')')
-				$("#title").html = item.title
-				$("#quote").html = item.quote
-				$("#author").html = item.author
+				$("#text").css('background', 'url(images/' + item.image + ') no-repeat')
+				$("#title").innerHTML = item.title
+				$("#quote").innerHTML = item.quote
+				$("#author").innerHTML = item.author
 			}
 		})
 	}
