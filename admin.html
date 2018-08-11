@@ -40,8 +40,9 @@
 			}
 			html += `<button onclick="del(${item.id})">Delete</button>`
 			html += `<a href="/quote/${item.id}">Preview</a>`
+			html += "<br><br>"
 		}
-		$('submissions').html(html)
+		$('#submissions').html(html)
 	})
 	
 </script>
