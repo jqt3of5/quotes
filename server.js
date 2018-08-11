@@ -97,7 +97,8 @@ html, body, {
 <script>
 setTimeout(() => location.reload(),60000)
 </script>
-<body background="/uploads/${file}">
+<body>
+<img src="/uploads/${file}" height="100%" width="auto"></img>
 </body>
 </html>`
     
@@ -366,10 +367,10 @@ app.post('/quote', (req, res) => {
     performDbActionOnCollection("slides", function(collection, onComplete) {
 	collection.countDocuments({}, function(err, result) {
 	    if (err) {
-		console.log("Error counting slides" + err)
-		res.end("There was an error")
-		onComplete()
-		return
+			console.log("Error counting slides" + err)
+			res.end("There was an error")
+			onComplete()
+			return
 	    }
 
 	    //Not the best id system ever, but it works for now :)
@@ -396,21 +397,21 @@ app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection("slides", function(collection, onComplete) {
 	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
 	    if(err || item == null){
-		console.log("failed to get quote to preview with id: "+ req.params.id +" " + err)
-		res.end("invalid id")
-		onComplete()
-		return
+			console.log("failed to get quote to preview with id: "+ req.params.id +" " + err)
+			res.end("invalid id")
+			onComplete()
+			return
 	    }
 
 	    if (item.type == "image")
 	    {
-		var html = createhtmlForImagePost(item)   
-		res.end(html)
+			var html = createhtmlForImagePost(item)   
+			res.end(html)
 	    }
 	    if (item.type == "text")
 	    {
-		var html = createhtmlForTextPost(item)   
-		res.end(html)
+			var html = createhtmlForTextPost(item)   
+			res.end(html)
 	    }
 
 	    onComplete()
@@ -426,10 +427,10 @@ app.delete('/admin/quote/:id', (req, res) => {
     performDbActionOnCollection("slides", function(collection, onComplete) {
 	collection.deleteOne({id: parseInt(req.params.id)}, function(err, result) {
 	    if(err){
-		res.end("invalid id")
-		console.log("error deleting quote from collection " + err)
-		onComplete()
-		return
+			res.end("invalid id")
+			console.log("error deleting quote from collection " + err)
+			onComplete()
+			return
 	    }
 	    res.end("OK")
 	    onComplete()
@@ -442,16 +443,16 @@ app.get('/admin/quote/:id/approve', (req, res) => {
     performDbActionOnCollection("slides", function(collection, onComplete) {
 	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: true}},  function(err, result) {
 	    if(err){
-		console.log("error approving quote from collection " + err)
-		res.end("invalid id")
-		onComplete()
-		return
+			console.log("error approving quote from collection " + err)
+			res.end("invalid id")
+			onComplete()
+			return
 	    }
 
 	    //Immediately show when we approve a quote and it's the first one
 	    if (selectedId == undefined)
 	    {
-		selectedId = parseInt(req.params.id)
+			selectedId = parseInt(req.params.id)
 	    }
 	    
 	    console.log("approved id:" + req.params.id)
