@@ -19,8 +19,8 @@
 		
 	#title {
 		font-size:40;
-		padding-top:80px;
-		padding-left:80px;
+		padding-top:50px;
+		padding-left:50px;
 	}
 
 	#quote {
@@ -61,7 +61,15 @@
 				$("#text").show()
 				
 				$("#text").css('background', 'url(images/' + item.image + ') no-repeat')
-				$("#title").text(item.title)
+				if (item.title != undefined && item.title != "")
+				{
+					$("#title").text(item.title)
+				}
+				else
+				{
+					$("#title").text("Xactimate Mobile - Android")
+				}
+				
 				$("#quote").text(item.quote)
 				$("#author").text(item.author)
 			}
