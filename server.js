@@ -37,7 +37,7 @@ function performDbActionOnCollection(collection, block)
 }
  
 getNextApprovedQuoteId()
-setInterval(() => getNextApprovedQuoteId() ,60000)
+setInterval(() => getNextApprovedQuoteId(),60000)
 
 function getNextApprovedQuoteId()
 {
@@ -81,91 +81,6 @@ function getNextApprovedQuote(quotes)
     return undefined
 }
 
-function createhtmlForImagePost(image)
-{
-    var file = image.filename
-
-    return `<html>
-<style>
-body {                                                                                                                                                                                                                                                                                                                                                                     
-background-size: cover;                                                                                                                                                                                                                                                                                                                                                     
-margin: 0;
-}   
-html, body, {
-    height: 100%;
-	
-}
-</style>
-<script>
-setTimeout(() => location.reload(),60000)
-</script>
-<body>
-<img src="/uploads/${file}" style="margin-left:auto; margin-right:auto; display:block" height="100%" width="auto"></img>
-</body>
-</html>`
-    
-}
-
-function createhtmlForTextPost(quote)
-{
-    var title = escapeHTML(quote.title)
-    var author = escapeHTML(quote.author)
-    
-    if (quote.title == undefined || quote.title == "")
-    {
-	title = "Xactimate Mobile - Android"
-    }
-    
-    var html= `<html>
-<style>
-body {
-background-size: cover
-}
-html, body, {
-    height: 100%;
-}
-.container {
-    height:90%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    font-size: 55;
-}
-    
-#title {
-    font-size:40;
-    margin-top:80px;
-    margin-left:80px;
-}
-#quote {
-    font-style:italic;
-}
-</style>
-<script>
-setTimeout(() => location.reload(),60000)
-</script>`
-
-    
-    if (quote.image != -1)
-    {
-	var imagePath = images[quote.image].name
-	html += `<body background="/${imagePath}">`
-    }
-
-    html += `<div id="title">${title}</div>
-<div class="container">
-<div>
-<div id="quote">${quote.quote}</div>
-<div style="text-align:right">${author}</div>
-</div>
-</div>
-</body>
-</html>`
-
-    return html
-}
-
 function escapeHTML(s) { 
     return s.replace(/&/g, '&amp;')
             .replace(/"/g, '&quot;')
@@ -178,51 +93,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use(express.static("images"))
 app.use("/uploads",express.static("uploads"))
-
-app.get('/', (req, res) => {
-    if (selectedId == undefined)
-    {
-	res.end(`<script>
-		setTimeout(() => location.reload(),60000)
-		</script>
-		No quotes yet!`)
-	return
-    }
-    
-    performDbActionOnCollection("slides", function(collection, onComplete) {
-	collection.findOne({id:selectedId}, function(err, item) {
-	    if(err){
-		console.log("failed to get quote with id: "+ selectedId+" " + err)
-		res.end("there was an error")
-		onComplete()
-		return
-	    }
-	    
-	    if (item == null)
-	    {
-		res.end(`<script>
-		setTimeout(() => location.reload(),60000)
-		</script>
-		No quotes yet!`)
-		onComplete()
-		return
-	    }
-
-	    if (item.type == "image")
-	    {
-		var html = createhtmlForImagePost(item)   
-		res.end(html)
-	    }
-	    if (item.type == "text")
-	    {
-		var html = createhtmlForTextPost(item)   
-		res.end(html)
-	    }
-	    onComplete()
-	})
-    })
-})
-
+app.get('/', (req, res) => {res.sendFile("index.html"), {root: __dirname} })
 app.get('/admin', (req, res) => {
     
     var html = `
@@ -290,7 +161,7 @@ app.get('/admin', (req, res) => {
     })
 })
 
-app.get('/image', (req, res) => {
+app.get('/addImage', (req, res) => {
     var html ="<html>"
     html += "<form action=\"/image\" enctype=\"multipart/form-data\" method=\"post\">"
 //    html += "Title: <input type=\"text\" placeholder=\"Title\" name=\"title\"></input><br>"
@@ -335,7 +206,7 @@ app.post('/image', upload.single('image'), (req, res) => {
     
 })
 
-app.get('/quote', (req, res) => {
+app.get('/addQuote', (req, res) => {
 
     var html ="<html>"
     html += "<form action=\"/quote\" method=\"post\">"
@@ -360,6 +231,35 @@ app.get('/quote', (req, res) => {
     res.end(html)
 })
 
+app.get('/quote', (req, res) => {
+	if (selectedId == undefined)
+    {
+		res.end(`{success:false, error:"No Quote Selected"}`)
+		return
+    }
+    
+    performDbActionOnCollection("slides", function(collection, onComplete) {
+		collection.findOne({id:selectedId}, function(err, item) {
+			if(err){
+				console.log("failed to get quote with id: "+ selectedId +" " + err)
+				res.end(`{success:false, error:"Could not Access Database"}`)
+				onComplete()
+				return
+			}
+			
+			if (item == null)
+			{
+				res.end(`{success:false, error:"Item not found"}`)
+				onComplete()
+				return
+			}
+
+			res.end(JSON.stringify(item))
+			onComplete()
+		})
+    })
+})
+
 //add quote
 app.post('/quote', (req, res) => {
     var quote = req.body
@@ -367,29 +267,29 @@ app.post('/quote', (req, res) => {
     console.log("got: " + JSON.stringify(quote))
 
     performDbActionOnCollection("slides", function(collection, onComplete) {
-	collection.countDocuments({}, function(err, result) {
-	    if (err) {
-			console.log("Error counting slides" + err)
-			res.end("There was an error")
-			onComplete()
-			return
-	    }
+		collection.countDocuments({}, function(err, result) {
+			if (err) {
+				console.log("Error counting slides" + err)
+				res.end("There was an error")
+				onComplete()
+				return
+			}
 
-	    //Not the best id system ever, but it works for now :)
-	    quote.id = result
-	    quote.approved = false
-	    quote.type = "text"
-	    collection.insertOne(quote, function(err, result) {
-		if(err){
-		    console.log("error inserting new quote into collection " + err)
-		    res.end("There was an error")
-		    onComplete()
-		    return
-		}
-		res.end("Thank you! Your submission will be reviewed")
-		onComplete()
-	    })
-	})
+			//Not the best id system ever, but it works for now :)
+			quote.id = result
+			quote.approved = false
+			quote.type = "text"
+			collection.insertOne(quote, function(err, result) {
+			if(err){
+				console.log("error inserting new quote into collection " + err)
+				res.end("There was an error")
+				onComplete()
+				return
+			}
+			res.end("Thank you! Your submission will be reviewed")
+			onComplete()
+			})
+		})
     })
 })
 
