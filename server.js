@@ -88,7 +88,7 @@ function createhtmlForImagePost(image)
     return `<html>
 <style>
 body {                                                                                                                                                                                                                                                                                                                                                                     
-background-size: cover                                                                                                                                                                                                                                                                                                                                                     
+background-size: cover;                                                                                                                                                                                                                                                                                                                                                     
 margin: 0;
 }   
 html, body, {
