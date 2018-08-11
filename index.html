@@ -35,6 +35,12 @@
 		width:auto;
 	}
 
+	#text {
+		height:100%;
+		width:100%;
+		background-size:cover;
+		
+	}
 	</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script>
@@ -54,7 +60,7 @@
 				$("#image").hide()
 				$("#text").show()
 				
-				$("#text").css('background-image', 'url(images/' + item.image + ')')
+				$("#text").css('background', 'url(images/' + item.image + ')')
 				$("#title").html = item.title
 				$("#quote").html = item.quote
 				$("#author").html = item.author
