@@ -43,20 +43,20 @@
 			
 			if (item.type == "image")
 			{
-				$(".image").show()
-				$(".text").hide()
+				$("#image").show()
+				$("#text").hide()
 				
-				$(".image").src = "uploads/" + item.filename
+				$("#image").attr('src',"uploads/" + item.filename)
 			}
 			if (item.type == "text")
 			{
-				$(".image").hide()
-				$(".text").show()
+				$("#image").hide()
+				$("#text").show()
 				
-				$(".text").background = "images/" + item.image
-				$(".title").html = item.title
-				$(".quote").html = item.quote
-				$("author").html = item.author
+				$("#text").css('background-image', 'url(images/' + item.image + ')')
+				$("#title").html = item.title
+				$("#quote").html = item.quote
+				$("#author").html = item.author
 			}
 		})
 	}
