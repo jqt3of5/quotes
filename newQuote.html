@@ -1,0 +1,25 @@
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+		</script>
+	</head>
+	<body>	
+		<form action="/quote" method="post">
+		Title: <input type="text" placeholder="Title" name="title"></input><br>
+		Quote: <textarea placeholder="Quote" name="quote"></textarea><br>
+		Author: <input type="text" placeholder="Author" name="author"></input><br><br>
+		Background Image: <br>
+
+		<input type="radio" name="image" value="-1" checked>None<br>
+		
+		for (var i = 0; i < images.length; ++i)
+		{
+			html += `<input type="radio" name="image" value="${images[i].name}"><img height=100 width=100 src="${images[i].name}" /><br>`
+		}
+		<br>
+		<button type=\"submit\" value=\"Submit\">Submit</button>
+		
+		</form>
+	</body>
+</html>
