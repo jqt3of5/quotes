@@ -111,7 +111,7 @@ app.get('/addQuote', (req, res) => {
     
     for (var i = 0; i < images.length; ++i)
     {
-		html += `<input type="radio" name="image" value="${images[i].name}"><img height=100 width=100 src="${images[i].name}" /><br>`
+		html += `<input type="radio" name="image" value="${images[i].name}"><img height=100 width=100 src="/images/${images[i].name}" /><br>`
     }
     html += "<br>"
     html += "<button type=\"submit\" value=\"Submit\">Submit</button>"
