@@ -1,6 +1,7 @@
 const express = require("express")
 const multer = require("multer")
 const mongo = require("mongodb")
+const auth = require("basic-auth-connect")
 
 const app = express()
 const upload = multer({dest: "uploads/"})
@@ -97,6 +98,7 @@ app.use("/uploads",express.static("uploads"))
 app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
 app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) })
 app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
+app.use(auth('admin', 'password'))
 
 app.get('/addQuote', (req, res) => {
 
