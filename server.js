@@ -101,7 +101,7 @@ app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirna
 
 app.use(auth({
 	users:{'admin': 'password'}
-	))
+}))
 
 app.get('/addQuote', (req, res) => {
 
