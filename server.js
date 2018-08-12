@@ -100,8 +100,8 @@ app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) }
 app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
 
 app.use(auth({
-	users: {'admin', 'password'}
-}))
+	users:{'admin': 'password'}
+	))
 
 app.get('/addQuote', (req, res) => {
 
