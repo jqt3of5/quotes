@@ -1,4 +1,5 @@
 var config = {
+    port:8080,
     db_host:"localhost",
     db_port:27017,
     db_name:"main",

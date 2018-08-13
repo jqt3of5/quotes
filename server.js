@@ -11,11 +11,14 @@ const upload = multer({dest: config.uploads_path})
 var quoteIndex = 0
 var selectedId = undefined
 
+
+//Text color is unused. But it would be a good idea to implement the feature if we ever start using dark colored backgrounds
 var images = [{value: "image2", name:"background2.jpg", textColor:"black"},
 	      {value: "image3", name:"background3.jpg", textColor:"black"},
 	      {value: "image4", name:"background4.jpg", textColor:"black"},
 	      {value: "image5", name:"background5.jpg", textColor:"black"},
-	      {value: "image6", name:"background6.jpg", textColor:"black"}]
+	      {value: "image6", name:"background6.jpg", textColor:"black"},
+	      {value: "image6", name:"background6.jpg", textColor:"black"}]]
 
 var mongo_client = mongo.MongoClient
 var db_url = `mongodb://${config.db_host}:${config.db_port}/`
@@ -331,4 +334,4 @@ app.get('/admin/quote/:id/unapprove', (req, res) => {
 	})
     })
 })
-app.listen(8080, () => console.log("app listening"))
+app.listen(config.port, () => console.log("app listening"))
