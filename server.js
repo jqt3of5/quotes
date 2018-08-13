@@ -96,13 +96,7 @@ app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
 
 app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
-app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) })
 app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
-
-app.use(auth({
-	users:{'admin': 'password'}
-}))
-
 app.get('/addQuote', (req, res) => {
 
     var html ="<html>"
@@ -254,6 +248,13 @@ app.get('/quotes', (req, res) => {
 		})
 	})
 })
+
+
+app.use(auth({
+	users:{'admin': 'password'},
+	challenge: true
+}))
+app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) })
 //delete quote
 app.delete('/admin/quote/:id', (req, res) => {
 
@@ -318,6 +319,4 @@ app.get('/admin/quote/:id/unapprove', (req, res) => {
 	})
     })
 })
-
-
 app.listen(8080, () => console.log("app listening"))
