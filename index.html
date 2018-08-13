@@ -5,7 +5,8 @@
 	background-size: cover
 	}
 	html, body, #background {
-		height: 100%;
+	height: 100%;
+	width:100%;
 		margin:0;
 	}
 	#container {
@@ -64,7 +65,7 @@
 				$("#image").hide()
 				$("#text").show()
 				
-				$("#text").css('background', 'url(images/' + item.image + ') no-repeat')
+                               	$("#text").css('background-image', 'url(images/' + item.image + ')')
 				if (item.title != undefined && item.title != "")
 				{
 					$("#title").text(item.title)

@@ -4,7 +4,9 @@ const mongo = require("mongodb")
 const auth = require("express-basic-auth")
 
 const app = express()
-const upload = multer({dest: "uploads/"})
+const config = require('./config')
+
+const upload = multer({dest: config.uploads_path})
 
 var quoteIndex = 0
 var selectedId = undefined
@@ -15,10 +17,10 @@ var images = [{value: "image2", name:"background2.jpg", textColor:"black"},
 	      {value: "image5", name:"background5.jpg", textColor:"black"},
 	      {value: "image6", name:"background6.jpg", textColor:"black"}]
 
-
 var mongo_client = mongo.MongoClient
-var db_url = "mongodb://localhost:27017/"
-var db_name = "main"
+var db_url = `mongodb://${config.db_host}:${config.db_port}/`
+const collection_name = "slides"
+
 function performDbActionOnCollection(collection, block)
 {
     mongo_client.connect(db_url, function(err, client) {
@@ -27,10 +29,10 @@ function performDbActionOnCollection(collection, block)
 	    return
 	}
 
-	var db = client.db(db_name)
+	var db = client.db(config.db_name)
 	console.log("Database successfully connected")
 
-	var collection = db.collection("slides")
+	var collection = db.collection(collection_name)
 	block(collection, function() {
 	    client.close()   
 	})
@@ -38,11 +40,11 @@ function performDbActionOnCollection(collection, block)
 }
  
 getNextApprovedQuoteId()
-setInterval(() => getNextApprovedQuoteId(),60000)
+setInterval(() => getNextApprovedQuoteId(), config.slide_timeout * 1000)
 
 function getNextApprovedQuoteId()
 {
-    performDbActionOnCollection("slides", function(collection) {
+    performDbActionOnCollection(collection_name, function(collection) {
     
 	collection.find({approved:true}).toArray(function(err, quotes) {
 	    if (err) {
@@ -123,7 +125,7 @@ app.get('/addQuote', (req, res) => {
 
 //Preview
 app.get('/quote/:id', (req, res) => {
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
 			if(err || item == null){
 				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
@@ -146,7 +148,7 @@ app.post('/image', upload.single('image'), (req, res) => {
 //    var subtitle = req.body.subtitle
     var filename = req.file.filename
     
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 	collection.countDocuments({}, function(err, result) {
 	    if (err) {
 		console.log("Error counting slides" + err)
@@ -179,7 +181,7 @@ app.get('/quote', (req, res) => {
 		return
     }
     
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 		collection.findOne({id:selectedId}, function(err, item) {
 			if(err){
 				console.log("failed to get quote with id: "+ selectedId +" " + err)
@@ -207,7 +209,7 @@ app.post('/quote', (req, res) => {
 
     console.log("got: " + JSON.stringify(quote))
 
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 		collection.countDocuments({}, function(err, result) {
 			if (err) {
 				console.log("Error counting slides" + err)
@@ -219,7 +221,10 @@ app.post('/quote', (req, res) => {
 			//Not the best id system ever, but it works for now :)
 			quote.id = result
 			quote.approved = false
-			quote.type = "text"
+		        quote.type = "text"
+		        quote.title = escapeHTML(quote.title)
+		        quote.author = escapeHTML(quote.author)
+		        quote.remoteIp = req.connection.remoteAddress
 			collection.insertOne(quote, function(err, result) {
 			if(err){
 				console.log("error inserting new quote into collection " + err)
@@ -235,7 +240,7 @@ app.post('/quote', (req, res) => {
 })
 
 app.get('/quotes', (req, res) => {
-	performDbActionOnCollection("slides", function(collection, onComplete) {
+	performDbActionOnCollection(collection_name, function(collection, onComplete) {
 		collection.find({}).toArray(function(err, items) {
 			if (err)
 			{
@@ -251,14 +256,15 @@ app.get('/quotes', (req, res) => {
 
 
 app.use(auth({
-	users:{'admin': 'password'},
-	challenge: true
+    users:config.admin_users,
+    challenge: true
 }))
+
 app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) })
 //delete quote
 app.delete('/admin/quote/:id', (req, res) => {
 
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 	collection.deleteOne({id: parseInt(req.params.id)}, function(err, result) {
 	    if(err){
 			res.end("invalid id")
@@ -266,6 +272,12 @@ app.delete('/admin/quote/:id', (req, res) => {
 			onComplete()
 			return
 	    }
+
+    	    if (selectedId == req.params.id)
+	    {
+		getNextApprovedQuoteId()
+	    }
+
 	    res.end("OK")
 	    onComplete()
 	})
@@ -274,7 +286,7 @@ app.delete('/admin/quote/:id', (req, res) => {
 
 app.get('/admin/quote/:id/approve', (req, res) => {
 
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: true}},  function(err, result) {
 	    if(err){
 			console.log("error approving quote from collection " + err)
@@ -299,7 +311,7 @@ app.get('/admin/quote/:id/approve', (req, res) => {
 
 app.get('/admin/quote/:id/unapprove', (req, res) => {
 
-    performDbActionOnCollection("slides", function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
 	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: false}},  function(err, result) {
 	    if(err){
 		console.log("error unapproving quote from collection " + err)
