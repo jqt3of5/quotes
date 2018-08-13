@@ -44,20 +44,20 @@ function getNextApprovedQuoteId()
 {
     performDbActionOnCollection("slides", function(collection) {
     
-	collection.find({}).toArray(function(err, quotes) {
+	collection.find({approved:true}).toArray(function(err, quotes) {
 	    if (err) {
-		console.log("Error fetching items from slides collection")
-		return
+			console.log("Error fetching items from slides collection")
+			return
 	    }
 	    
 	    var quote = getNextApprovedQuote(quotes)
 	    if (quote != undefined)
 	    {
-		selectedId = quote.id
+			selectedId = quote.id
 	    }
 	    else
 	    {
-		selectedId = undefined
+			selectedId = undefined
 	    }
 	})    
     })
