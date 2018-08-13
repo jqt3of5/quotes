@@ -99,6 +99,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
+app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
 app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
@@ -137,7 +138,7 @@ app.get('/quote/:id', (req, res) => {
 				return
 			}
 			//TODO
-			res.sendFile("index.html", {root: __dirname}) 
+	    res.render("preview", {item: item}) 
 			onComplete()
 		})
 	})
