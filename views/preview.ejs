@@ -56,7 +56,7 @@
 	  $("#image").show()
 	  $("#text").hide()
 	  
-	  $("#image").attr('src',"uploads/" + "<%= item.filename %>")
+	  $("#image").attr('src',"/uploads/" + "<%= item.filename %>")
 	  }
 	  if ("<%= item.type %>" == "text")
 	  {

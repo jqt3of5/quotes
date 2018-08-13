@@ -27,6 +27,14 @@
 		padding-top:20px;
 		padding-left:20px;
 	}
+	#address {
+		font-size:15;
+		position:absolute;
+		bottom:0;
+		right:0;
+		padding-bottom:15px;
+		padding-right:15px;
+	}
 
 	#quote {
 		font-style:italic;
@@ -45,6 +53,9 @@
 		width:100%;
 		background-size:cover;
 		
+	}
+	#address {
+	        
 	}
 	</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -95,6 +106,8 @@
 				<div id="author" style="text-align:right"></div>
 			</div>
 		</div>
+
 	</div>
+	<span id="address"><%= server_address %></span>
 </body>
 </html>

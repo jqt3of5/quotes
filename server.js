@@ -2,6 +2,7 @@ const express = require("express")
 const multer = require("multer")
 const mongo = require("mongodb")
 const auth = require("express-basic-auth")
+const ip = require('ip')
 
 const app = express()
 const config = require('./config')
@@ -101,7 +102,8 @@ app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
 app.set('view engine', 'ejs')
 
-app.get('/', (req, res) => {res.sendFile("index.html", {root: __dirname}) })
+
+app.get('/', (req, res) => res.render("index", {server_address: config.show_address ? `${ip.address()}:${config.port}` : ""}))
 app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
 app.get('/addQuote', (req, res) => {
 
@@ -160,7 +162,7 @@ app.post('/image', upload.single('image'), (req, res) => {
 		onComplete()
 		return
 	    }
-
+	    console.log("adding file with id: " + result)
 	    //Not the best id system ever, but it works for now :)
 	    var image = {id:result, type:"image", approved:false, filename:filename}
 	    collection.insertOne(image, function(err, result) {
