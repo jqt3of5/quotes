@@ -1,0 +1,94 @@
+<html>
+<head>
+	<style>
+	#background {
+	background-size: cover
+	}
+	html, body, #background {
+	height: 100%;
+	width:100%;
+		margin:0;
+	}
+	#container {
+		height:100%;
+		width:100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+		font-size: 55;
+	}
+		
+	#title {
+		font-size:40;
+		position:absolute;
+		top:0;
+		left:0;
+		padding-top:20px;
+		padding-left:20px;
+	}
+
+	#quote {
+		font-style:italic;
+	}
+
+	#image {
+		margin-left:auto; 
+		margin-right:auto; 
+		display:block;
+		height:100%;
+		width:auto;
+	}
+
+	#text {
+		height:100%;
+		width:100%;
+		background-size:cover;
+		
+	}
+	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+	  window.onload = function() {
+	  
+	  if ("<%= item.type %>" == "image")
+	  {
+	  $("#image").show()
+	  $("#text").hide()
+	  
+	  $("#image").attr('src',"uploads/" + "<%= item.filename %>")
+	  }
+	  if ("<%= item.type %>" == "text")
+	  {
+	      $("#image").hide()
+    	      $("#text").show()
+	  
+              $("#text").css('background-image', 'url(/images/' + "<%= item.image %>" + ')')
+	  if (<%= item.title != undefined %>  && "<%= item.title %>" != "")
+	  {
+	  $("#title").text("<%= item.title %>")
+	  }
+	  else
+	  {
+	  $("#title").text("Xactimate Mobile - Android")
+	  }
+	  
+	  $("#quote").text("<%= item.quote %>")
+	  $("#author").text("<%= item.author %>")
+	  }
+}
+	</script>
+</head>
+<body>
+	<img id="image"></img>
+	<div id="text">
+		<div id="title"></div>
+		<div id="container">
+			<div>
+				<div id="quote"></div>
+				<div id="author" style="text-align:right"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
