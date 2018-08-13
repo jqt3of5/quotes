@@ -102,7 +102,7 @@ app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
 app.set('view engine', 'ejs')
 
-app.get('/', (req, res) => res.render("index", {server_ip: ip.address()}))
+app.get('/', (req, res) => res.render("index", {server_ip: ip.address(), server_port:config.port}))
 app.get('/addImage', (req, res) => {res.sendFile("newImage.html", {root: __dirname}) })
 app.get('/addQuote', (req, res) => {
 
