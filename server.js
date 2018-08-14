@@ -3,11 +3,17 @@ const multer = require("multer")
 const mongo = require("mongodb")
 const auth = require("express-basic-auth")
 const ip = require('ip')
-
+const process = require('process')
+const path = require('path')
 const app = express()
-const config = require('./config')
 
+//We must change the working directory to be __dirname so that when we auto start the server, we can change the working dir to be the correct one so it will find all of the
+//accompanying files. 
+process.chdir(__dirname)
+
+const config = require('./config')
 const upload = multer({dest: config.uploads_path})
+
 
 var quoteIndex = 0
 var selectedId = undefined
@@ -101,6 +107,7 @@ app.use(express.json())
 app.use("/images", express.static("images"))
 app.use("/uploads",express.static("uploads"))
 app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, '/views'));
 
 
 app.get('/', (req, res) => res.render("index", {server_address: config.show_address ? `${ip.address()}:${config.port}` : ""}))
