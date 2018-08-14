@@ -216,7 +216,7 @@ app.post('/quote', (req, res) => {
     console.log("got: " + JSON.stringify(quote))
 
     performDbActionOnCollection(collection_name, function(collection, onComplete) {
-		collection.count({}, function(err, result) {
+		collection.countDocuments({}, function(err, result) {
 			if (err) {
 				console.log("Error counting slides" + err)
 				res.end("There was an error")
