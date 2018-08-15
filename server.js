@@ -162,7 +162,7 @@ app.post('/image', upload.single('image'), (req, res) => {
     var filename = req.file.filename
     
     performDbActionOnCollection(collection_name, function(collection, onComplete) {
-	collection.countDocuments({}, function(err, result) {
+	collection.count({}, function(err, result) {
 	    if (err) {
 		console.log("Error counting slides" + err)
 		res.end("There was an error")
