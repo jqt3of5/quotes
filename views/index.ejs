@@ -78,7 +78,12 @@
 				if (item.image != -1)
 				{				
                                		$("#text").css('background-image', 'url(images/' + item.image + ')')
-				}
+	                        }
+                          	else
+	                        {
+                                	$("#text").css('background-image', 'none')
+                                }
+	
 				if (item.title != undefined && item.title != "")
 				{
 					$("#title").text(item.title)
