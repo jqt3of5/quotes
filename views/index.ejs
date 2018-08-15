@@ -75,8 +75,10 @@
 			{
 				$("#image").hide()
 				$("#text").show()
-				
-                               	$("#text").css('background-image', 'url(images/' + item.image + ')')
+				if (item.image != -1)
+				{				
+                               		$("#text").css('background-image', 'url(images/' + item.image + ')')
+				}
 				if (item.title != undefined && item.title != "")
 				{
 					$("#title").text(item.title)
