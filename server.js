@@ -94,13 +94,6 @@ function getNextApprovedQuote(quotes)
     return undefined
 }
 
-function escapeHTML(s) { 
-    return s.replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-}
-
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
@@ -235,8 +228,6 @@ app.post('/quote', (req, res) => {
 			quote.id = result
 			quote.approved = false
 		        quote.type = "text"
-		        quote.title = escapeHTML(quote.title)
-		        quote.author = escapeHTML(quote.author)
 		        quote.remoteIp = req.connection.remoteAddress
 			collection.insertOne(quote, function(err, result) {
 			if(err){
