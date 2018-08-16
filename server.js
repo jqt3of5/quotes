@@ -31,30 +31,47 @@ var mongo_client = mongo.MongoClient
 var db_url = `mongodb://${config.db_host}:${config.db_port}/`
 const collection_name = "slides"
 
-function performDbActionOnCollection(collection, block)
+
+var db_connection;
+function performDbActionOnCollection(collection_name, block)
 {
+    if (db_connection != undefined)
+    {
+	try {
+	    var db = db_connection.db(config.db_name)
+	    var collection = db.collection(collection_name)
+	    block(collection, function() {})
+	}
+	catch(err)
+	{
+	    console.log("caught exception: " + err)
+	    block(null, function() {})
+	}
+    }
+}
+
+function connectAndPerform(block){
     mongo_client.connect(db_url, function(err, client) {
 	if (err){
 	    console.log("Error connecting to the database..." + err)
 	    return
 	}
-
-	var db = client.db(config.db_name)
-	console.log("Database successfully connected")
-
-	var collection = db.collection(collection_name)
-	block(collection, function() {
-	    client.close()   
-	})
+	console.log("Connected to database")
+	db_connection = client
+	block()
     })
 }
- 
-getNextApprovedQuoteId()
+
+connectAndPerform(function() {
+    getNextApprovedQuoteId()
+    app.listen(config.port, () => console.log("app listening"))
+})
+
 setInterval(() => getNextApprovedQuoteId(), config.slide_timeout * 1000)
 
 function getNextApprovedQuoteId()
 {
-    performDbActionOnCollection(collection_name, function(collection) {
+    performDbActionOnCollection(collection_name, function(collection, onComplete) {
     
 	collection.find({approved:true}).toArray(function(err, quotes) {
 	    if (err) {
@@ -335,4 +352,4 @@ app.get('/admin/quote/:id/unapprove', (req, res) => {
 	})
     })
 })
-app.listen(config.port, () => console.log("app listening"))
+
