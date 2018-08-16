@@ -40,12 +40,12 @@ function performDbActionOnCollection(collection_name, block)
 	try {
 	    var db = db_connection.db(config.db_name)
 	    var collection = db.collection(collection_name)
-	    block(collection, function() {})
+	    block(collection)
 	}
 	catch(err)
 	{
 	    console.log("caught exception: " + err)
-	    block(null, function() {})
+	    block(null)
 	}
     }
 }
@@ -71,7 +71,7 @@ setInterval(() => getNextApprovedQuoteId(), config.slide_timeout * 1000)
 
 function getNextApprovedQuoteId()
 {
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
     
 	collection.find({approved:true}).toArray(function(err, quotes) {
 	    if (err) {
@@ -148,17 +148,14 @@ app.get('/addQuote', (req, res) => {
 
 //Preview
 app.get('/quote/:id', (req, res) => {
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
 			if(err || item == null){
 				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
 				res.end("invalid id")
-				onComplete()
 				return
 			}
-			//TODO
 	    res.render("preview", {item: item}) 
-			onComplete()
 		})
 	})
 })
@@ -167,16 +164,13 @@ app.get('/quote/:id', (req, res) => {
 app.post('/image', upload.single('image'), (req, res) => {
     console.log("got file: " + req.file.filename)
     
-//    var title = req.body.title
-//    var subtitle = req.body.subtitle
     var filename = req.file.filename
     
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 	collection.countDocuments({}, function(err, result) {
 	    if (err) {
 		console.log("Error counting slides" + err)
 		res.end("There was an error")
-		onComplete()
 		return
 	    }
 	    console.log("adding file with id: " + result)
@@ -186,11 +180,9 @@ app.post('/image', upload.single('image'), (req, res) => {
 		if(err){
 		    console.log("error inserting new quote into collection " + err)
 		    res.end("There was an error")
-		    onComplete()
 		    return
 		}
 		res.end("Thank you! Your submission will be reviewed")
-		onComplete()
 	    })
 	})
     })
@@ -204,24 +196,21 @@ app.get('/quote', (req, res) => {
 		return
     }
     
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 		collection.findOne({id:selectedId}, function(err, item) {
 			if(err){
 				console.log("failed to get quote with id: "+ selectedId +" " + err)
 				res.end(`{success:false, error:"Could not Access Database"}`)
-				onComplete()
 				return
 			}
 			
 			if (item == null)
 			{
 				res.end(`{success:false, error:"Item not found"}`)
-				onComplete()
-				return
+			        return
 			}
 
 			res.end(JSON.stringify(item))
-			onComplete()
 		})
     })
 })
@@ -232,12 +221,11 @@ app.post('/quote', (req, res) => {
 
     console.log("got: " + JSON.stringify(quote))
 
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 		collection.countDocuments({}, function(err, result) {
 			if (err) {
 				console.log("Error counting slides" + err)
 				res.end("There was an error")
-				onComplete()
 				return
 			}
 
@@ -250,27 +238,23 @@ app.post('/quote', (req, res) => {
 			if(err){
 				console.log("error inserting new quote into collection " + err)
 				res.end("There was an error")
-				onComplete()
 				return
 			}
 			res.end("Thank you! Your submission will be reviewed")
-			onComplete()
 			})
 		})
     })
 })
 
 app.get('/quotes', (req, res) => {
-	performDbActionOnCollection(collection_name, function(collection, onComplete) {
+	performDbActionOnCollection(collection_name, function(collection) {
 		collection.find({}).toArray(function(err, items) {
 			if (err)
 			{
 				res.end({success:false, error:err})
-				onComplete()
 				return
 			}
 			res.end(JSON.stringify(items))
-			onComplete()
 		})
 	})
 })
@@ -285,12 +269,11 @@ app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) }
 //delete quote
 app.delete('/admin/quote/:id', (req, res) => {
 
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 	collection.deleteOne({id: parseInt(req.params.id)}, function(err, result) {
 	    if(err){
 			res.end("invalid id")
 			console.log("error deleting quote from collection " + err)
-			onComplete()
 			return
 	    }
 
@@ -300,19 +283,17 @@ app.delete('/admin/quote/:id', (req, res) => {
 	    }
 
 	    res.end("OK")
-	    onComplete()
 	})
     })
 })
 
 app.get('/admin/quote/:id/approve', (req, res) => {
 
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: true}},  function(err, result) {
 	    if(err){
 			console.log("error approving quote from collection " + err)
 			res.end("invalid id")
-			onComplete()
 			return
 	    }
 
@@ -324,20 +305,17 @@ app.get('/admin/quote/:id/approve', (req, res) => {
 	    
 	    console.log("approved id:" + req.params.id)
 	    res.end("OK")
-	   
-	    onComplete()
 	})
     })
 })
 
 app.get('/admin/quote/:id/unapprove', (req, res) => {
 
-    performDbActionOnCollection(collection_name, function(collection, onComplete) {
+    performDbActionOnCollection(collection_name, function(collection) {
 	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: false}},  function(err, result) {
 	    if(err){
 		console.log("error unapproving quote from collection " + err)
 		res.end("invalid id")
-		onComplete()
 		return
 	    }
 
@@ -348,7 +326,6 @@ app.get('/admin/quote/:id/unapprove', (req, res) => {
 	    
 	    console.log("unapproved id:" + req.params.id)
 	    res.end("OK")
-	    onComplete()
 	})
     })
 })
