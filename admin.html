@@ -29,17 +29,17 @@
 				html += item.title + "<br>"
 				html += item.quote + "<br>"
 			}
-			
+				    
 			if (item.approved)
 			{
-				html += `<button onclick="unapprove(${item.id})">Unapprove</button>`
+				html += '<button onclick="unapprove(\'' + item._id + '\')">Unapprove</button>'
 			}
 			else
-			{
-				html += `<button onclick="approve(${item.id})">Approve</button>`
+		        {
+			        html += '<button onclick="approve(\'' + item._id + '\')">Approve</button>'
 			}
-			html += `<button onclick="del(${item.id})">Delete</button>`
-			html += `<a href="/quote/${item.id}">Preview</a>`
+	                html += '<button onclick="del(\'' + item._id + '\')">Delete</button>'
+			html += `<a href="/quote/${item._id}">Preview</a>`
 			html += "<br><br>"
 		}
 		$('#submissions').html(html)

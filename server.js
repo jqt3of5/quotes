@@ -82,7 +82,7 @@ function getNextApprovedQuoteId()
 	    var quote = getNextApprovedQuote(quotes)
 	    if (quote != undefined)
 	    {
-			selectedId = quote.id
+			selectedId = quote._id
 	    }
 	    else
 	    {
@@ -149,15 +149,15 @@ app.get('/addQuote', (req, res) => {
 //Preview
 app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection(collection_name, function(collection) {
-	collection.findOne({id:parseInt(req.params.id)}, function(err, item) {
+	collection.findOne({_id:new mongo.ObjectID(req.params.id)}, function(err, item) {
 			if(err || item == null){
 				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
 				res.end("invalid id")
 				return
 			}
 	    res.render("preview", {item: item}) 
-		})
 	})
+    })
 })
 
 
@@ -167,15 +167,8 @@ app.post('/image', upload.single('image'), (req, res) => {
     var filename = req.file.filename
     
     performDbActionOnCollection(collection_name, function(collection) {
-	collection.count({}, function(err, result) {
-	    if (err) {
-		console.log("Error counting slides" + err)
-		res.end("There was an error")
-		return
-	    }
-	    console.log("adding file with id: " + result)
-	    //Not the best id system ever, but it works for now :)
-	    var image = {id:result, type:"image", approved:false, filename:filename}
+	
+	    var image = {type:"image", approved:false, filename:filename}
 	    collection.insertOne(image, function(err, result) {
 		if(err){
 		    console.log("error inserting new quote into collection " + err)
@@ -184,34 +177,32 @@ app.post('/image', upload.single('image'), (req, res) => {
 		}
 		res.end("Thank you! Your submission will be reviewed")
 	    })
-	})
     })
-    
 })
 
 app.get('/quote', (req, res) => {
-	if (selectedId == undefined)
+    if (selectedId == undefined)
     {
-		res.end(`{success:false, error:"No Quote Selected"}`)
-		return
+	res.end(`{success:false, error:"No Quote Selected"}`)
+	return
     }
     
     performDbActionOnCollection(collection_name, function(collection) {
-		collection.findOne({id:selectedId}, function(err, item) {
-			if(err){
-				console.log("failed to get quote with id: "+ selectedId +" " + err)
-				res.end(`{success:false, error:"Could not Access Database"}`)
-				return
-			}
-			
-			if (item == null)
-			{
-				res.end(`{success:false, error:"Item not found"}`)
-			        return
-			}
+	collection.findOne({_id:selectedId}, function(err, item) {
+	    if(err){
+		console.log("failed to get quote with id: "+ selectedId +" " + err)
+		res.end(`{success:false, error:"Could not Access Database"}`)
+		return
+	    }
+	    
+	    if (item == null)
+	    {
+		res.end(`{success:false, error:"Item not found"}`)
+		return
+	    }
 
-			res.end(JSON.stringify(item))
-		})
+	    res.end(JSON.stringify(item))
+	})
     })
 })
 
@@ -222,27 +213,18 @@ app.post('/quote', (req, res) => {
     console.log("got: " + JSON.stringify(quote))
 
     performDbActionOnCollection(collection_name, function(collection) {
-		collection.count({}, function(err, result) {
-			if (err) {
-				console.log("Error counting slides" + err)
-				res.end("There was an error")
-				return
-			}
-
-			//Not the best id system ever, but it works for now :)
-			quote.id = result
-			quote.approved = false
-		        quote.type = "text"
-		        quote.remoteIp = req.connection.remoteAddress
-			collection.insertOne(quote, function(err, result) {
-			if(err){
-				console.log("error inserting new quote into collection " + err)
-				res.end("There was an error")
-				return
-			}
-			res.end("Thank you! Your submission will be reviewed")
-			})
-		})
+	//Not the best id system ever, but it works for now :)
+	quote.approved = false
+	quote.type = "text"
+	quote.remoteIp = req.connection.remoteAddress
+	collection.insertOne(quote, function(err, result) {
+	    if(err){
+		console.log("error inserting new quote into collection " + err)
+		res.end("There was an error")
+		return
+	    }
+	    res.end("Thank you! Your submission will be reviewed")
+	})
     })
 })
 
@@ -270,7 +252,7 @@ app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) }
 app.delete('/admin/quote/:id', (req, res) => {
 
     performDbActionOnCollection(collection_name, function(collection) {
-	collection.deleteOne({id: parseInt(req.params.id)}, function(err, result) {
+	collection.deleteOne({_id: new mongo.ObjectID(req.params.id)}, function(err, result) {
 	    if(err){
 			res.end("invalid id")
 			console.log("error deleting quote from collection " + err)
@@ -290,7 +272,7 @@ app.delete('/admin/quote/:id', (req, res) => {
 app.get('/admin/quote/:id/approve', (req, res) => {
 
     performDbActionOnCollection(collection_name, function(collection) {
-	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: true}},  function(err, result) {
+	collection.updateOne({_id: new mongo.ObjectID(req.params.id)},{ $set: {approved: true}},  function(err, result) {
 	    if(err){
 			console.log("error approving quote from collection " + err)
 			res.end("invalid id")
@@ -300,7 +282,7 @@ app.get('/admin/quote/:id/approve', (req, res) => {
 	    //Immediately show when we approve a quote and it's the first one
 	    if (selectedId == undefined)
 	    {
-			selectedId = parseInt(req.params.id)
+		selectedId = req.params.id
 	    }
 	    
 	    console.log("approved id:" + req.params.id)
@@ -312,7 +294,7 @@ app.get('/admin/quote/:id/approve', (req, res) => {
 app.get('/admin/quote/:id/unapprove', (req, res) => {
 
     performDbActionOnCollection(collection_name, function(collection) {
-	collection.updateOne({id: parseInt(req.params.id)},{ $set: {approved: false}},  function(err, result) {
+	collection.updateOne({_id: new mongo.ObjectID(req.params.id)},{ $set: {approved: false}},  function(err, result) {
 	    if(err){
 		console.log("error unapproving quote from collection " + err)
 		res.end("invalid id")
