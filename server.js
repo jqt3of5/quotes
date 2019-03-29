@@ -149,6 +149,7 @@ app.get('/addQuote', (req, res) => {
 //Preview
 app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection(collection_name, function(collection) {
+
 	collection.findOne({_id:new mongo.ObjectID(req.params.id)}, function(err, item) {
 			if(err || item == null){
 				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
@@ -167,7 +168,6 @@ app.post('/image', upload.single('image'), (req, res) => {
     var filename = req.file.filename
     
     performDbActionOnCollection(collection_name, function(collection) {
-	
 	    var image = {type:"image", approved:false, filename:filename}
 	    collection.insertOne(image, function(err, result) {
 		if(err){
@@ -188,6 +188,7 @@ app.get('/quote', (req, res) => {
     }
     
     performDbActionOnCollection(collection_name, function(collection) {
+
 	collection.findOne({_id:selectedId}, function(err, item) {
 	    if(err){
 		console.log("failed to get quote with id: "+ selectedId +" " + err)
@@ -213,7 +214,7 @@ app.post('/quote', (req, res) => {
     console.log("got: " + JSON.stringify(quote))
 
     performDbActionOnCollection(collection_name, function(collection) {
-	//Not the best id system ever, but it works for now :)
+
 	quote.approved = false
 	quote.type = "text"
 	quote.remoteIp = req.connection.remoteAddress
@@ -252,6 +253,7 @@ app.get('/admin', (req, res) => {res.sendFile("admin.html", {root: __dirname}) }
 app.delete('/admin/quote/:id', (req, res) => {
 
     performDbActionOnCollection(collection_name, function(collection) {
+
 	collection.deleteOne({_id: new mongo.ObjectID(req.params.id)}, function(err, result) {
 	    if(err){
 			res.end("invalid id")
