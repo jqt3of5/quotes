@@ -7,6 +7,51 @@ const process = require('process')
 const path = require('path')
 const app = express()
 
+const fs = require('fs');
+const readline = require('readline');
+
+const {google} = require('googleapis')
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+const TOKEN_PATH = 'token.json';
+
+
+function authorize(credentials, callback) {
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+	client_id, client_secret, redirect_uris[0]);
+
+    // Check if we have previously stored a token.
+    fs.readFile(TOKEN_PATH, (err, token) => {
+	if (err) return console.log("authentication failed: " + err)
+	oAuth2Client.setCredentials(JSON.parse(token));
+	callback(oAuth2Client);
+    });
+}
+
+//Unused, just a reference at this point
+/*function listMajors(auth) {
+    const sheets = google.sheets({version: 'v4', auth});
+    sheets.spreadsheets.values.get({
+	spreadsheetId: '14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ',
+	range: 'A2:E',
+    }, (err, res) => {
+	if (err) return console.log('The API returned an error: ' + err);
+	const rows = res.data.values;
+	if (rows.length) {
+	    console.log('Points');
+	    // Print columns A and E, which correspond to indices 0 and 4.
+	    rows.map((row) => {
+		if (row[4] != undefined)
+		    console.log(`${row[0]}, ${row[4]}`);
+	    });
+	} else {
+	    console.log('No data found.');
+	}
+    });
+}*/
+
+
+
 //We must change the working directory to be __dirname so that when we auto start the server, we can change the working dir to be the correct one so it will find all of the
 //accompanying files. 
 process.chdir(__dirname)
@@ -61,7 +106,7 @@ function connectAndPerform(block){
 	block()
     })
 }
-
+app.listen(config.port, () => console.log("app listening"))
 connectAndPerform(function() {
     getNextApprovedQuoteId()
     app.listen(config.port, () => console.log("app listening"))
@@ -110,7 +155,6 @@ function getNextApprovedQuote(quotes)
     }
     return undefined
 }
-
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
@@ -162,23 +206,6 @@ app.get('/quote/:id', (req, res) => {
 })
 
 
-app.post('/image', upload.single('image'), (req, res) => {
-    console.log("got file: " + req.file.filename)
-    
-    var filename = req.file.filename
-    
-    performDbActionOnCollection(collection_name, function(collection) {
-	    var image = {type:"image", approved:false, filename:filename}
-	    collection.insertOne(image, function(err, result) {
-		if(err){
-		    console.log("error inserting new quote into collection " + err)
-		    res.end("There was an error")
-		    return
-		}
-		res.end("Thank you! Your submission will be reviewed")
-	    })
-    })
-})
 
 app.get('/quote', (req, res) => {
     if (selectedId == undefined)
@@ -186,7 +213,33 @@ app.get('/quote', (req, res) => {
 	res.end(`{success:false, error:"No Quote Selected"}`)
 	return
     }
-    
+
+    //TODO: Google api for accessing the sheets
+/*    fs.readFile('credentials.json', (err, content) => {
+	if (err) return console.log('Error loading client secret file:', err)
+	
+	authorize(JSON.parse(content), function (auth) {
+	    const sheets = google.sheets({version: 'v4', auth});
+	    sheets.spreadsheets.values.get({
+		spreadsheetId: '14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ',
+		range: 'A2:E',
+	    }, (err, response) => {
+		if (err) return console.log('The API returned an error: ' + err);
+		const rows = response.data.values;
+		if (rows.length) {
+
+		    var scores = rows.filter((row) => row[4] != undefined);
+		    item = {type:'html', html:JSON.stringify(scores)}
+		    res.end(JSON.stringify(item))			
+		} else {
+		    console.log('No data found.');
+		}
+	    });
+	})
+    });
+
+    return;
+  */  
     performDbActionOnCollection(collection_name, function(collection) {
 
 	collection.findOne({_id:selectedId}, function(err, item) {
@@ -202,8 +255,26 @@ app.get('/quote', (req, res) => {
 		return
 	    }
 
-	    res.end(JSON.stringify(item))
+	   res.end(JSON.stringify(item))
 	})
+    })
+})
+
+app.post('/image', upload.single('image'), (req, res) => {
+    console.log("got file: " + req.file.filename)
+    
+    var filename = req.file.filename
+    
+    performDbActionOnCollection(collection_name, function(collection) {
+	    var image = {type:"image", approved:false, filename:filename}
+	    collection.insertOne(image, function(err, result) {
+		if(err){
+		    console.log("error inserting new quote into collection " + err)
+		    res.end("There was an error")
+		    return
+		}
+		res.end("Thank you! Your submission will be reviewed")
+	    })
     })
 })
 
@@ -237,6 +308,8 @@ app.get('/quotes', (req, res) => {
 				res.end({success:false, error:err})
 				return
 			}
+
+		  
 			res.end(JSON.stringify(items))
 		})
 	})

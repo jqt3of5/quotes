@@ -63,17 +63,19 @@
 	function getContent()
 	{
 		$.getJSON("/quote", function(item){
-			
+			//ToDo: This is a pretty cumbersome way of handling different types...
 			if (item.type == "image")
 			{
-				$("#image").show()
-				$("#text").hide()
+			    $("#image").show()
+			    $("#text").hide()
+			    $("#html").hide()
 				
-				$("#image").attr('src',"uploads/" + item.filename)
+			    $("#image").attr('src',"uploads/" + item.filename)
 			}
 			if (item.type == "text")
 			{
-				$("#image").hide()
+			        $("#image").hide()
+			        $("#html").hide()
 				$("#text").show()
 				if (item.image != -1)
 				{				
@@ -96,7 +98,16 @@
 				$("#quote").text(item.quote)
 				$("#author").text(item.author)
 			}
-		})
+		        if (item.type == "html")
+		        {
+			    $("#image").hide()
+			    $("#text").hide()
+
+			    $("#html").show()
+			    $("#html").html(item.html)
+			}
+	
+	        })
 	}
 
 	getContent()
@@ -104,7 +115,8 @@
 	</script>
 </head>
 <body>
-	<img id="image"></img>
+    <img id="image"></img>
+    <div id="html"></div>
 	<div id="text">
 		<div id="title"></div>
 		<div id="container">
