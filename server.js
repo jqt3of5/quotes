@@ -28,30 +28,6 @@ function authorize(credentials, callback) {
     });
 }
 
-//Unused, just a reference at this point
-/*function listMajors(auth) {
-    const sheets = google.sheets({version: 'v4', auth});
-    sheets.spreadsheets.values.get({
-	spreadsheetId: '14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ',
-	range: 'A2:E',
-    }, (err, res) => {
-	if (err) return console.log('The API returned an error: ' + err);
-	const rows = res.data.values;
-	if (rows.length) {
-	    console.log('Points');
-	    // Print columns A and E, which correspond to indices 0 and 4.
-	    rows.map((row) => {
-		if (row[4] != undefined)
-		    console.log(`${row[0]}, ${row[4]}`);
-	    });
-	} else {
-	    console.log('No data found.');
-	}
-    });
-}*/
-
-
-
 //We must change the working directory to be __dirname so that when we auto start the server, we can change the working dir to be the correct one so it will find all of the
 //accompanying files. 
 process.chdir(__dirname)
