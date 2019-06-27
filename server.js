@@ -271,6 +271,7 @@ app.get('/quote', (req, res) => {
     	})
     })
 })
+//TODO: Ugly and aweful. Do this better
 app.get('/addSpreadsheet', (req, res) => {
     var quote = {type:"leaderboard", spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ", range:"A2:E"}
     performDbActionOnCollection(collection_name, function(collection) {
