@@ -1,0 +1,13 @@
+<h1>Learning Initiative Top 10 Leaderboard</h1>
+
+    <div style="width: 400px; margin:auto">
+        <h2><div>Name <span style="float:right">Points</span></div></h2>
+        <div style="font-size:30px">
+            <ol>
+
+                <% ranks.forEach(function(rank) { %>
+                    <li><%= rank.name %> <span style="float:right"><%= rank.points %></span></li>
+                <% }); %>
+            </ol>
+        </div>
+     </div>   

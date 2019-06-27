@@ -6,7 +6,7 @@ const ip = require('ip')
 const process = require('process')
 const path = require('path')
 const app = express()
-
+const ejs = require('ejs')
 const fs = require('fs');
 const readline = require('readline');
 
@@ -26,6 +26,55 @@ function authorize(credentials, callback) {
 	oAuth2Client.setCredentials(JSON.parse(token));
 	callback(oAuth2Client);
     });
+}
+
+function getSpreadSheet(id, range, callback) {
+    fs.readFile('credentials.json', (err, content) => {
+        if (err) {
+            callback(undefined)
+            return console.log('Error loading client secret file:', err)
+        }
+    
+        authorize(JSON.parse(content), function (auth) {
+            const sheets = google.sheets({version: 'v4', auth});
+            sheets.spreadsheets.values.get({
+            spreadsheetId: id,
+            range: range,
+            }, (err, response) => {
+                if (err) {
+                    callback(undefined)
+                    return console.log('The API returned an error: ' + err);
+                }
+                const rows = response.data.values;
+                if (rows.length) {
+
+                    callback(rows)
+                } else {
+                    console.log('No data found.');
+                    callback(undefined)
+                }
+            });
+        })
+    });
+}
+
+function generateLeaderboard(rows, callback)
+{
+    if (rows == undefined)
+    {
+        return callback(undefined)
+    }
+    var rowsWithScores = rows.filter((row) => row[4] != undefined);
+    var ranks = rowsWithScores
+        .map((row) => {return {name:row[0], points:parseInt(row[4])}})
+        .sort((x, y) => {
+          
+            return y.points - x.points
+        })
+        .slice(0,10);
+    ejs.renderFile("views/leaderboard.ejs", {ranks:ranks}, function(err, str) {
+        callback(str)
+    }) 
 }
 
 //We must change the working directory to be __dirname so that when we auto start the server, we can change the working dir to be the correct one so it will find all of the
@@ -82,7 +131,7 @@ function connectAndPerform(block){
 	block()
     })
 }
-app.listen(config.port, () => console.log("app listening"))
+
 connectAndPerform(function() {
     getNextApprovedQuoteId()
     app.listen(config.port, () => console.log("app listening"))
@@ -94,22 +143,22 @@ function getNextApprovedQuoteId()
 {
     performDbActionOnCollection(collection_name, function(collection) {
     
-	collection.find({approved:true}).toArray(function(err, quotes) {
-	    if (err) {
-			console.log("Error fetching items from slides collection")
-			return
-	    }
-	    
-	    var quote = getNextApprovedQuote(quotes)
-	    if (quote != undefined)
-	    {
-			selectedId = quote._id
-	    }
-	    else
-	    {
-			selectedId = undefined
-	    }
-	})    
+    	collection.find({approved:true}).toArray(function(err, quotes) {
+    	    if (err) {
+    			console.log("Error fetching items from slides collection")
+    			return
+    	    }
+    	    
+    	    var quote = getNextApprovedQuote(quotes)
+    	    if (quote != undefined)
+    	    {
+    			selectedId = quote._id
+    	    }
+    	    else
+    	    {
+    			selectedId = undefined
+    	    }
+    	})    
     })
 }
 
@@ -170,72 +219,74 @@ app.get('/addQuote', (req, res) => {
 app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection(collection_name, function(collection) {
 
-	collection.findOne({_id:new mongo.ObjectID(req.params.id)}, function(err, item) {
-			if(err || item == null){
-				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
-				res.end("invalid id")
-				return
-			}
-	    res.render("preview", {item: item}) 
-	})
+    	collection.findOne({_id:new mongo.ObjectID(req.params.id)}, function(err, item) {
+    			if(err || item == null){
+    				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
+    				res.end("invalid id")
+    				return
+    			}
+    	    res.render("preview", {item: item}) 
+    	})
     })
 })
-
-
 
 app.get('/quote', (req, res) => {
     if (selectedId == undefined)
     {
-	res.end(`{success:false, error:"No Quote Selected"}`)
-	return
+	    res.end(`{success:false, error:"No Quote Selected"}`)
+	    return
     }
-
-    //TODO: Google api for accessing the sheets
-/*    fs.readFile('credentials.json', (err, content) => {
-	if (err) return console.log('Error loading client secret file:', err)
-	
-	authorize(JSON.parse(content), function (auth) {
-	    const sheets = google.sheets({version: 'v4', auth});
-	    sheets.spreadsheets.values.get({
-		spreadsheetId: '14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ',
-		range: 'A2:E',
-	    }, (err, response) => {
-		if (err) return console.log('The API returned an error: ' + err);
-		const rows = response.data.values;
-		if (rows.length) {
-
-		    var scores = rows.filter((row) => row[4] != undefined);
-		    item = {type:'html', html:JSON.stringify(scores)}
-		    res.end(JSON.stringify(item))			
-		} else {
-		    console.log('No data found.');
-		}
-	    });
-	})
-    });
-
-    return;
-  */  
+    
     performDbActionOnCollection(collection_name, function(collection) {
 
-	collection.findOne({_id:selectedId}, function(err, item) {
-	    if(err){
-		console.log("failed to get quote with id: "+ selectedId +" " + err)
-		res.end(`{success:false, error:"Could not Access Database"}`)
-		return
-	    }
-	    
-	    if (item == null)
-	    {
-		res.end(`{success:false, error:"Item not found"}`)
-		return
-	    }
+    	collection.findOne({_id:selectedId}, function(err, item) {
+    	    if(err){
+        		console.log("failed to get quote with id: "+ selectedId +" " + err)
+        		res.end(`{success:false, error:"Could not Access Database"}`)
+        		return
+    	    }
+    	    
+    	    if (item == null)
+    	    {
+    		    res.end(`{success:false, error:"Item not found"}`)
+    		    return
+    	    }
 
-	   res.end(JSON.stringify(item))
-	})
+            if (item.type == 'leaderboard')
+            {
+            
+                getSpreadSheet(item.spreadsheetId, item.range,function (rows) {
+                   generateLeaderboard(rows, function(html) {
+                       if (html == undefined)
+                       {
+                           return res.end(`{success:false, error:"No data from spreadsheet"}`)
+                       }
+                       res.end(JSON.stringify({type:'html', html:html}))                
+                   })
+                })
+                return
+            }
+            //TODO: This just sends a json object to be displayed. Might make sense to generate HTML like above
+    	    res.end(JSON.stringify(item))
+    	})
     })
 })
-
+app.get('/addSpreadsheet', (req, res) => {
+    var quote = {type:"leaderboard", spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ", range:"A2:E"}
+    performDbActionOnCollection(collection_name, function(collection) {
+        quote.approved = false
+        quote.remoteIp = req.connection.remoteAddress
+        collection.insertOne(quote, function(err, result) {
+            if(err){
+                console.log("error inserting new quote into collection " + err)
+                res.end("There was an error")
+                return
+            }
+            res.end("Thank you! Your submission will be reviewed")
+        })
+    })
+})
+//add Image
 app.post('/image', upload.single('image'), (req, res) => {
     console.log("got file: " + req.file.filename)
     
