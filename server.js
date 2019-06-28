@@ -275,59 +275,6 @@ app.get('/quote', (req, res) => {
     	})
     })
 })
-//TODO: Ugly and aweful. Do this better
-app.get('/addSpreadsheet', (req, res) => {
-
-    var overall = {
-        approved:true,
-        remoteIp: req.connection.remoteAddress,
-        type:"leaderboard", 
-        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
-        range:"All Leaderboard - All Time!A2:B", 
-        title:"Learning Initiative Top 10 Leaderboard, Department Overall", 
-        color:"red"}
-
-    var dev = {
-        approved:true,
-        remoteIp: req.connection.remoteAddress,
-        type:"leaderboard", 
-        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
-        range:"Dev / Automation Leaderboard - All Time!A2:B", 
-        title:"Learning Initiative Top 10 Leaderboard, Development", 
-        color:"green"}
-
-    var qa = {
-        approved:true,
-        remoteIp: req.connection.remoteAddress,
-        type:"leaderboard", 
-        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
-        range:"QA Leaderboard - All Time!A2:B", 
-        title:"Learning Initiative Top 10 Leaderboard, QA", 
-        color:"blue"}
-
-    var pm = {
-        approved:true,
-        remoteIp: req.connection.remoteAddress,
-        type:"leaderboard", 
-        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
-        range:"PM / UX / Doc Leaderboard - All Time!A2:B", 
-        title:"Learning Initiative Top 10 Leaderboard, Product", 
-        color:"brown"}
-
-    
-
-    performDbActionOnCollection(collection_name, function(collection) {
-        
-        collection.insertMany([overall, dev, qa, pm], function(err, result) {
-            if(err){
-                console.log("error inserting new quote into collection " + err)
-                res.end("There was an error")
-                return
-            }
-            res.end("Thank you! Your submission will be reviewed")
-        })
-    })
-})
 //add Image
 app.post('/image', upload.single('image'), (req, res) => {
     console.log("got file: " + req.file.filename)
