@@ -21,7 +21,7 @@ h2 {
 
 .horizontal .progress-bar {
   float: left;
-  height: 60px;
+  height: 5%;
   width: 100%;
   padding: 12px 0;
 }
@@ -30,14 +30,14 @@ h2 {
 	    display:inline-block;
 	    width:30%;
 	    text-align:right;
-	    line-height:60px;
+	    line-height:100%
 	    vertical-align:bottom;
 	    font-size:24px;
 }
 .horizontal .progress-track {
   position: relative;
   width: 65%;
-  height: 60px;
+  height: 100%;
   background: #ebebeb;
   display:inline-block;
 }
@@ -45,7 +45,7 @@ h2 {
 .horizontal .progress-fill {
   position: relative;
   display:inline-block;
-  height: 60px;
+  height: 100%;
   width: 50%;
   text-align: left;
   font-family: "Lato","Verdana",sans-serif;
@@ -62,10 +62,12 @@ h2 {
 .blue {
   background: #00b;
 }
-
+.brown {
+  background: #444;
+}
 .horizontal .points {
     display:inline-block;
-    line-height: 60px;
+    line-height: 100%;
     position:absolute;
     margin-left:5px;
     veritcal-align:super;	
@@ -77,14 +79,14 @@ h2 {
 
 </style>
 <div class="container horizontal flat">
-    <h2 id="leadertitle">Top 10 Leaderboard, Department Overall</h2>
-    <% product_ranks.forEach(function(rank) { %>
+    <h2 id="leadertitle"><%= title %></h2>
+    <% ranks.forEach(function(rank) { %>
 
     <div class="progress-bar horizontal">
         <span class="progress-label"><%= rank.name %></span>		
         <div class="progress-track">
-            <div class="progress-fill red" style="width: <%= rank.percentage %>%" >
-	    <span> </span>
+            <div class="progress-fill <%= color %>" style="width: <%= rank.percentage %>%" >
+	             <span> </span>
             </div>
 	    <div class="points">
 	    <%= rank.points %>

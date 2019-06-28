@@ -256,29 +256,18 @@ app.get('/quote', (req, res) => {
 
             if (item.type == 'leaderboard')
             {
-            
-                getSpreadSheet(item.spreadsheetId, "All Leaderboard - All Time!A2:B",function (overall) {
-		    getSpreadSheet(item.spreadsheetId, "Dev / Automation Leaderboard - All Time!A2:B",function (dev) {
-			getSpreadSheet(item.spreadsheetId, "QA Leaderboard - All Time!A2:B",function (qa) {
-			    getSpreadSheet(item.spreadsheetId, "PM / UX / Doc Leaderboard - All Time!A2:B",function (product) {
-				var overall_ranks = getRanks(overall)
-				var dev_ranks = getRanks(dev)
-				var qa_ranks = getRanks(qa)
-				var product_ranks = getRanks(product)
-				
-
-			        ejs.renderFile("views/leaderboard.ejs", {overall_ranks:overall_ranks, dev_ranks:dev_ranks, qa_ranks:qa_ranks, product_ranks:product_ranks}, function(err, str) {
-				    if (err) {
-					console.log("ejs error" + err)
-					return res.end(`{success:false, error:"No data from spreadsheet"}`)
-				    }
-				    res.end(JSON.stringify({type:'html', html:str}))                				    
-				})
-			    })
-			})
-		    })
+                getSpreadSheet(item.spreadsheetId, item.range, function (rows) {
+                    var ranks = getRanks(rows)
 		 
+			        ejs.renderFile("views/leaderboard.ejs", {title:item.title, ranks:ranks,color:item.color}, function(err, str) {
+    				    if (err) {
+        					console.log("ejs error" + err)
+        					return res.end(`{success:false, error:"No data from spreadsheet"}`)
+    				    }
+    				    res.end(JSON.stringify({type:'html', html:str}))                				    
+    				})
                 })
+		 
                 return
             }
             //TODO: This just sends a json object to be displayed. Might make sense to generate HTML like above
@@ -288,11 +277,48 @@ app.get('/quote', (req, res) => {
 })
 //TODO: Ugly and aweful. Do this better
 app.get('/addSpreadsheet', (req, res) => {
-    var quote = {type:"leaderboard", spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ", range:"A2:E"}
+
+    var overall = {
+        approved:true,
+        remoteIp: req.connection.remoteAddress,
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"All Leaderboard - All Time!A2:B", 
+        title:"Top 10 Leaderboard, Department Overall", 
+        color:"red"}
+
+    var dev = {
+        approved:true,
+        remoteIp: req.connection.remoteAddress,
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"Dev / Automation Leaderboard - All Time!A2:B", 
+        title:"Top 10 Leaderboard, Development", 
+        color:"green"}
+
+    var qa = {
+        approved:true,
+        remoteIp: req.connection.remoteAddress,
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"QA Leaderboard - All Time!A2:B", 
+        title:"Top 10 Leaderboard, QA", 
+        color:"blue"}
+
+    var pm = {
+        approved:true,
+        remoteIp: req.connection.remoteAddress,
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"PM / UX / Doc Leaderboard - All Time!A2:B", 
+        title:"Top 10 Leaderboard, Product", 
+        color:"brown"}
+
+    
+
     performDbActionOnCollection(collection_name, function(collection) {
-        quote.approved = false
-        quote.remoteIp = req.connection.remoteAddress
-        collection.insertOne(quote, function(err, result) {
+        
+        collection.insertMany([overall, dev, qa, pm], function(err, result) {
             if(err){
                 console.log("error inserting new quote into collection " + err)
                 res.end("There was an error")
