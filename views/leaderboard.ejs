@@ -1,13 +1,96 @@
-<h1>Learning Initiative Top 10 Leaderboard</h1>
+<style>
 
-    <div style="width: 400px; margin:auto">
-        <h2><div>Name <span style="float:right">Points</span></div></h2>
-        <div style="font-size:30px">
-            <ol>
+h2 {
+  margin: 0 0 20px 0;
+  padding: 0 0 5px 0;
+  border-bottom: 1px solid #999;
+  font-family: sans-serif;
+  font-weight: normal;
+  color: #333;
+}
 
-                <% ranks.forEach(function(rank) { %>
-                    <li><%= rank.name %> <span style="float:right"><%= rank.points %></span></li>
-                <% }); %>
-            </ol>
+.container {
+  width: 95%;
+  height: 90%;
+  margin: 20px;
+  background: #fff;
+  padding: 20px;
+  overflow: hidden;
+
+}
+
+.horizontal .progress-bar {
+  float: left;
+  height: 60px;
+  width: 100%;
+  padding: 12px 0;
+}
+
+.horizontal .progress-label {
+	    display:inline-block;
+	    width:30%;
+	    text-align:right;
+	    line-height:60px;
+	    vertical-align:bottom;
+	    font-size:24px;
+}
+.horizontal .progress-track {
+  position: relative;
+  width: 65%;
+  height: 60px;
+  background: #ebebeb;
+  display:inline-block;
+}
+
+.horizontal .progress-fill {
+  position: relative;
+  display:inline-block;
+  height: 60px;
+  width: 50%;
+  text-align: left;
+  font-family: "Lato","Verdana",sans-serif;
+  font-size: 12px;
+  line-height: 60px;
+}
+
+.green {
+  background: #0b0;
+}
+.red {
+  background: #b00;
+}
+.blue {
+  background: #00b;
+}
+
+.horizontal .points {
+    display:inline-block;
+    line-height: 60px;
+    position:absolute;
+    margin-left:5px;
+    veritcal-align:super;	
+}
+
+#leadertitle {
+       text-align:center;
+}
+
+</style>
+<div class="container horizontal flat">
+    <h2 id="leadertitle">Top 10 Leaderboard, Department Overall</h2>
+    <% product_ranks.forEach(function(rank) { %>
+
+    <div class="progress-bar horizontal">
+        <span class="progress-label"><%= rank.name %></span>		
+        <div class="progress-track">
+            <div class="progress-fill red" style="width: <%= rank.percentage %>%" >
+	    <span> </span>
+            </div>
+	    <div class="points">
+	    <%= rank.points %>
+	   </div>
         </div>
-     </div>   
+    </div>
+
+    <% }); %>
+</div>

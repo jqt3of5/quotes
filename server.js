@@ -58,23 +58,25 @@ function getSpreadSheet(id, range, callback) {
     });
 }
 
-function generateLeaderboard(rows, callback)
+function getRanks(rows)
 {
     if (rows == undefined)
     {
+	console.log("undefined was passed to generateLeaderboard")
         return callback(undefined)
     }
-    var rowsWithScores = rows.filter((row) => row[4] != undefined);
+    var rowsWithScores = rows.filter((row) => row[1] != undefined);
     var ranks = rowsWithScores
-        .map((row) => {return {name:row[0], points:parseInt(row[4])}})
+        .map((row) => {return {name:row[0], points:parseInt(row[1])}})
         .sort((x, y) => {
           
             return y.points - x.points
         })
         .slice(0,10);
-    ejs.renderFile("views/leaderboard.ejs", {ranks:ranks}, function(err, str) {
-        callback(str)
-    }) 
+    var maxPoints = ranks[0].points + ranks[0].points*.10
+    ranks.forEach((rank) => rank.percentage = Math.floor(100 *rank.points/maxPoints))
+
+    return ranks
 }
 
 //We must change the working directory to be __dirname so that when we auto start the server, we can change the working dir to be the correct one so it will find all of the
@@ -255,14 +257,27 @@ app.get('/quote', (req, res) => {
             if (item.type == 'leaderboard')
             {
             
-                getSpreadSheet(item.spreadsheetId, item.range,function (rows) {
-                   generateLeaderboard(rows, function(html) {
-                       if (html == undefined)
-                       {
-                           return res.end(`{success:false, error:"No data from spreadsheet"}`)
-                       }
-                       res.end(JSON.stringify({type:'html', html:html}))                
-                   })
+                getSpreadSheet(item.spreadsheetId, "All Leaderboard - All Time!A2:B",function (overall) {
+		    getSpreadSheet(item.spreadsheetId, "Dev / Automation Leaderboard - All Time!A2:B",function (dev) {
+			getSpreadSheet(item.spreadsheetId, "QA Leaderboard - All Time!A2:B",function (qa) {
+			    getSpreadSheet(item.spreadsheetId, "PM / UX / Doc Leaderboard - All Time!A2:B",function (product) {
+				var overall_ranks = getRanks(overall)
+				var dev_ranks = getRanks(dev)
+				var qa_ranks = getRanks(qa)
+				var product_ranks = getRanks(product)
+				
+
+			        ejs.renderFile("views/leaderboard.ejs", {overall_ranks:overall_ranks, dev_ranks:dev_ranks, qa_ranks:qa_ranks, product_ranks:product_ranks}, function(err, str) {
+				    if (err) {
+					console.log("ejs error" + err)
+					return res.end(`{success:false, error:"No data from spreadsheet"}`)
+				    }
+				    res.end(JSON.stringify({type:'html', html:str}))                				    
+				})
+			    })
+			})
+		    })
+		 
                 })
                 return
             }
