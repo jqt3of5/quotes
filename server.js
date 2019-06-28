@@ -6,6 +6,78 @@ const ip = require('ip')
 const process = require('process')
 const path = require('path')
 const app = express()
+const ejs = require('ejs')
+const fs = require('fs');
+const readline = require('readline');
+
+const {google} = require('googleapis')
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+const TOKEN_PATH = 'token.json';
+
+
+function authorize(credentials, callback) {
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+	client_id, client_secret, redirect_uris[0]);
+
+    // Check if we have previously stored a token.
+    fs.readFile(TOKEN_PATH, (err, token) => {
+	if (err) return console.log("authentication failed: " + err)
+	oAuth2Client.setCredentials(JSON.parse(token));
+	callback(oAuth2Client);
+    });
+}
+
+function getSpreadSheet(id, range, callback) {
+    fs.readFile('credentials.json', (err, content) => {
+        if (err) {
+            callback(undefined)
+            return console.log('Error loading client secret file:', err)
+        }
+    
+        authorize(JSON.parse(content), function (auth) {
+            const sheets = google.sheets({version: 'v4', auth});
+            sheets.spreadsheets.values.get({
+            spreadsheetId: id,
+            range: range,
+            }, (err, response) => {
+                if (err) {
+                    callback(undefined)
+                    return console.log('The API returned an error: ' + err);
+                }
+                const rows = response.data.values;
+                if (rows.length) {
+
+                    callback(rows)
+                } else {
+                    console.log('No data found.');
+                    callback(undefined)
+                }
+            });
+        })
+    });
+}
+
+function getRanks(rows)
+{
+    if (rows == undefined)
+    {
+	console.log("undefined was passed to generateLeaderboard")
+        return callback(undefined)
+    }
+    var rowsWithScores = rows.filter((row) => row[1] != undefined);
+    var ranks = rowsWithScores
+        .map((row) => {return {name:row[0], points:parseInt(row[1])}})
+        .sort((x, y) => {
+          
+            return y.points - x.points
+        })
+        .slice(0,10);
+    var maxPoints = ranks[0].points + ranks[0].points*.10
+    ranks.forEach((rank) => rank.percentage = Math.floor(100 *rank.points/maxPoints))
+
+    return ranks
+}
 
 //We must change the working directory to be __dirname so that when we auto start the server, we can change the working dir to be the correct one so it will find all of the
 //accompanying files. 
@@ -73,22 +145,22 @@ function getNextApprovedQuoteId()
 {
     performDbActionOnCollection(collection_name, function(collection) {
     
-	collection.find({approved:true}).toArray(function(err, quotes) {
-	    if (err) {
-			console.log("Error fetching items from slides collection")
-			return
-	    }
-	    
-	    var quote = getNextApprovedQuote(quotes)
-	    if (quote != undefined)
-	    {
-			selectedId = quote._id
-	    }
-	    else
-	    {
-			selectedId = undefined
-	    }
-	})    
+    	collection.find({approved:true}).toArray(function(err, quotes) {
+    	    if (err) {
+    			console.log("Error fetching items from slides collection")
+    			return
+    	    }
+    	    
+    	    var quote = getNextApprovedQuote(quotes)
+    	    if (quote != undefined)
+    	    {
+    			selectedId = quote._id
+    	    }
+    	    else
+    	    {
+    			selectedId = undefined
+    	    }
+    	})    
     })
 }
 
@@ -110,7 +182,6 @@ function getNextApprovedQuote(quotes)
     }
     return undefined
 }
-
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
@@ -150,18 +221,61 @@ app.get('/addQuote', (req, res) => {
 app.get('/quote/:id', (req, res) => {
     performDbActionOnCollection(collection_name, function(collection) {
 
-	collection.findOne({_id:new mongo.ObjectID(req.params.id)}, function(err, item) {
-			if(err || item == null){
-				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
-				res.end("invalid id")
-				return
-			}
-	    res.render("preview", {item: item}) 
-	})
+    	collection.findOne({_id:new mongo.ObjectID(req.params.id)}, function(err, item) {
+    			if(err || item == null){
+    				console.log("failed to get quote to preview with id: " + req.params.id + " " + err)
+    				res.end("invalid id")
+    				return
+    			}
+    	    res.render("preview", {item: item}) 
+    	})
     })
 })
 
+app.get('/quote', (req, res) => {
+    if (selectedId == undefined)
+    {
+	    res.end(`{success:false, error:"No Quote Selected"}`)
+	    return
+    }
+    
+    performDbActionOnCollection(collection_name, function(collection) {
 
+    	collection.findOne({_id:selectedId}, function(err, item) {
+    	    if(err){
+        		console.log("failed to get quote with id: "+ selectedId +" " + err)
+        		res.end(`{success:false, error:"Could not Access Database"}`)
+        		return
+    	    }
+    	    
+    	    if (item == null)
+    	    {
+    		    res.end(`{success:false, error:"Item not found"}`)
+    		    return
+    	    }
+
+            if (item.type == 'leaderboard')
+            {
+                getSpreadSheet(item.spreadsheetId, item.range, function (rows) {
+                    var ranks = getRanks(rows)
+		 
+			        ejs.renderFile("views/leaderboard.ejs", {title:item.title, ranks:ranks,color:item.color}, function(err, str) {
+    				    if (err) {
+        					console.log("ejs error" + err)
+        					return res.end(`{success:false, error:"No data from spreadsheet"}`)
+    				    }
+    				    res.end(JSON.stringify({type:'html', html:str}))                				    
+    				})
+                })
+		 
+                return
+            }
+            //TODO: This just sends a json object to be displayed. Might make sense to generate HTML like above
+    	    res.end(JSON.stringify(item))
+    	})
+    })
+})
+//add Image
 app.post('/image', upload.single('image'), (req, res) => {
     console.log("got file: " + req.file.filename)
     
@@ -177,33 +291,6 @@ app.post('/image', upload.single('image'), (req, res) => {
 		}
 		res.end("Thank you! Your submission will be reviewed")
 	    })
-    })
-})
-
-app.get('/quote', (req, res) => {
-    if (selectedId == undefined)
-    {
-	res.end(`{success:false, error:"No Quote Selected"}`)
-	return
-    }
-    
-    performDbActionOnCollection(collection_name, function(collection) {
-
-	collection.findOne({_id:selectedId}, function(err, item) {
-	    if(err){
-		console.log("failed to get quote with id: "+ selectedId +" " + err)
-		res.end(`{success:false, error:"Could not Access Database"}`)
-		return
-	    }
-	    
-	    if (item == null)
-	    {
-		res.end(`{success:false, error:"Item not found"}`)
-		return
-	    }
-
-	    res.end(JSON.stringify(item))
-	})
     })
 })
 
@@ -237,6 +324,8 @@ app.get('/quotes', (req, res) => {
 				res.end({success:false, error:err})
 				return
 			}
+
+		  
 			res.end(JSON.stringify(items))
 		})
 	})

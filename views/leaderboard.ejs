@@ -1,0 +1,100 @@
+<style>
+
+h2 {
+  margin: 0 0 20px 0;
+  padding: 0 0 5px 0;
+  border-bottom: 1px solid #999;
+  font-family: sans-serif;
+  font-weight: normal;
+  color: #333;
+}
+
+.container {
+  width: 95%;
+  height: 90%;
+  margin: 20px;
+  background: #fff;
+  padding: 20px;
+  overflow: hidden;
+
+}
+
+.horizontal .progress-bar {
+  float: left;
+  height: 5%;
+  width: 100%;
+  padding: 12px 0;
+}
+
+.horizontal .progress-label {
+	    display:inline-block;
+	    width:30%;
+	    text-align:right;
+	    line-height:100%;
+	    height: 100%;
+	    vertical-align:bottom;
+	    font-size:24px;
+            vertical-align:middle;		
+}
+.horizontal .progress-track {
+  position: relative;
+  width: 65%;
+  height: 100%;
+  background: #ebebeb;
+  display:inline-block;
+}
+
+.horizontal .progress-fill {
+  position: relative;
+  display:inline-block;
+  height: 100%;
+  width: 50%;
+  text-align: left;
+  font-family: "Lato","Verdana",sans-serif;
+  font-size: 12px;
+  line-height: 60px;
+}
+
+.green {
+  background: #0b0;
+}
+.red {
+  background: #b00;
+}
+.blue {
+  background: #00b;
+}
+.brown {
+  background: #444;
+}
+.horizontal .points {
+    display:inline-block;
+    line-height: 100%;
+    height: 100%;	
+    margin-left:5px;
+    vertical-align:middle;	
+}
+
+#leadertitle {
+       text-align:center;
+}
+
+</style>
+<div class="container horizontal flat">
+    <h2 id="leadertitle"><%= title %></h2>
+    <% ranks.forEach(function(rank) { %>
+
+    <div class="progress-bar horizontal">
+        <span class="progress-label"><%= rank.name %></span>		
+        <div class="progress-track">
+            <div class="progress-fill <%= color %>" style="width: <%= rank.percentage %>%" >
+	             <span> </span>
+            </div>
+	    <div class="points">
+	    <%= rank.points %>
+	   </div>
+        </div>
+    </div>
+
+    <% }); %>
+</div>
