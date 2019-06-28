@@ -34,7 +34,7 @@ function getSpreadSheet(id, range, callback) {
             callback(undefined)
             return console.log('Error loading client secret file:', err)
         }
-    
+
         authorize(JSON.parse(content), function (auth) {
             const sheets = google.sheets({version: 'v4', auth});
             sheets.spreadsheets.values.get({
@@ -62,8 +62,8 @@ function getRanks(rows)
 {
     if (rows == undefined)
     {
-	console.log("undefined was passed to generateLeaderboard")
-        return callback(undefined)
+	console.log("undefined was passed to getRanks")
+        return
     }
     var rowsWithScores = rows.filter((row) => row[1] != undefined);
     var ranks = rowsWithScores
