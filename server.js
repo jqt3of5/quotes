@@ -284,7 +284,7 @@ app.get('/addSpreadsheet', (req, res) => {
         type:"leaderboard", 
         spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
         range:"All Leaderboard - All Time!A2:B", 
-        title:"Top 10 Leaderboard, Department Overall", 
+        title:"Learning Initiative Top 10 Leaderboard, Department Overall", 
         color:"red"}
 
     var dev = {
@@ -293,7 +293,7 @@ app.get('/addSpreadsheet', (req, res) => {
         type:"leaderboard", 
         spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
         range:"Dev / Automation Leaderboard - All Time!A2:B", 
-        title:"Top 10 Leaderboard, Development", 
+        title:"Learning Initiative Top 10 Leaderboard, Development", 
         color:"green"}
 
     var qa = {
@@ -302,7 +302,7 @@ app.get('/addSpreadsheet', (req, res) => {
         type:"leaderboard", 
         spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
         range:"QA Leaderboard - All Time!A2:B", 
-        title:"Top 10 Leaderboard, QA", 
+        title:"Learning Initiative Top 10 Leaderboard, QA", 
         color:"blue"}
 
     var pm = {
@@ -311,7 +311,7 @@ app.get('/addSpreadsheet', (req, res) => {
         type:"leaderboard", 
         spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
         range:"PM / UX / Doc Leaderboard - All Time!A2:B", 
-        title:"Top 10 Leaderboard, Product", 
+        title:"Learning Initiative Top 10 Leaderboard, Product", 
         color:"brown"}
 
     
