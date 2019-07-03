@@ -1,5 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
+const mongo = require("mongodb")
+
+const config = require('./config')
 
 const {google} = require('googleapis')
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
@@ -79,10 +82,95 @@ function listMajors(auth) {
       console.log('Name, Major:');
       // Print columns A and E, which correspond to indices 0 and 4.
       rows.map((row) => {
-        console.log(`${row[0]}, ${row[4]}`);
+        console.log(`${row[0]}, ${row[3]}`);
       });
     } else {
       console.log('No data found.');
     }
   });
 }
+
+var mongo_client = mongo.MongoClient
+var db_url = `mongodb://${config.db_host}:${config.db_port}/`
+const collection_name = "slides"
+
+var db_connection;
+function performDbActionOnCollection(collection_name, block)
+{
+    if (db_connection != undefined)
+    {
+	try {
+	    var db = db_connection.db(config.db_name)
+	    var collection = db.collection(collection_name)
+	    block(collection)
+	}
+	catch(err)
+	{
+	    console.log("caught exception: " + err)
+	    block(null)
+	}
+    }
+}
+
+function connectAndPerform(block){
+    mongo_client.connect(db_url, function(err, client) {
+	if (err){
+	    console.log("Error connecting to the database..." + err)
+	    return
+	}
+	console.log("Connected to database")
+	db_connection = client
+	block()
+    })
+}
+
+connectAndPerform(function() {
+
+    var overall = {
+        approved:true,
+        remoteIp: "",
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"All Leaderboard - All Time!A2:B", 
+        title:"Learning Initiative Top 10 Leaderboard, Department Overall", 
+        color:"red"}
+
+    var dev = {
+        approved:true,
+        remoteIp: "",
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"Dev / Automation Leaderboard - All Time!A2:B", 
+        title:"Learning Initiative Top 10 Leaderboard, Development", 
+        color:"green"}
+
+    var qa = {
+        approved:true,
+        remoteIp: "",
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"QA Leaderboard - All Time!A2:B", 
+        title:"Learning Initiative Top 10 Leaderboard, QA", 
+        color:"blue"}
+
+    var pm = {
+        approved:true,
+        remoteIp: "",
+        type:"leaderboard", 
+        spreadsheetId:"14i701s9ihzv2CxKUMdzFsBusqMDaZwzNDayzjWSxvoQ",
+        range:"PM / UX / Doc Leaderboard - All Time!A2:B", 
+        title:"Learning Initiative Top 10 Leaderboard, Product", 
+        color:"brown"}
+
+    
+
+    performDbActionOnCollection(collection_name, function(collection) {
+        
+        collection.insertMany([overall, dev, qa, pm], function(err, result) {
+            if(err){
+                console.log("error inserting new quote into collection " + err)
+            }
+        })
+    })
+})
+
