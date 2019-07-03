@@ -84,6 +84,7 @@ function listMajors(auth) {
       rows.map((row) => {
         console.log(`${row[0]}, ${row[3]}`);
       });
+	insertSpreadsheets()
     } else {
       console.log('No data found.');
     }
@@ -123,7 +124,7 @@ function connectAndPerform(block){
 	block()
     })
 }
-
+function insertSpreadsheets() {
 connectAndPerform(function() {
 
     var overall = {
@@ -174,3 +175,4 @@ connectAndPerform(function() {
     })
 })
 
+}
