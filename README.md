@@ -34,3 +34,10 @@ With the correct path to server.js where you checked out the code.
 8. Start mongodb `sudo service mongod start`
 9. Start our service `sudo systemctl start quotes.service`
 10. restart the pi!
+
+Google Sheets setup
+1. Enable the google sheets service for you account here: https://developers.google.com/sheets/api/quickstart/nodejs
+2. Download the credentials.json, and put it in the top level of the checked out repo
+3. Run "node googleapis.js" on a computer with a browser. 
+4. Follow the steps, you'll recieve a token.json. 
+5. Ensure token.json and credentials.json are both in the top level of your repo on the raspaberry pi. 
