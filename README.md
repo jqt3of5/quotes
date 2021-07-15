@@ -1,3 +1,6 @@
+# Quotes
+In the office we had TVs hung up, each with a raspberry pi connected. I wanted to create a simple piece of software that would display user-submitted quotes and images on those TVs on rotation. This was acually installed on the TVs, and it was a fun time for the team
+
 # Recommended Setup (On a RaspberryPi)
 
 1. Checkout the latest source, or newest version. 
